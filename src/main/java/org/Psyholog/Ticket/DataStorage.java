@@ -157,9 +157,7 @@ class DataWrapper {
         this.ticketCounter = ticketCounter;
     }
 
-    public Map<String, String> getTicketChannelMap() {
-        return ticketChannelMap;
-    }
+    public Map<String, String> getTicketChannelMap() { return ticketChannelMap; }
 
     public Set<String> getClosedTickets() {
         return closedTickets;

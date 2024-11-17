@@ -42,7 +42,7 @@ public class CreateSys extends ListenerAdapter {
     public static final String voiceCategory = Dotenv.load().get("voiceCategory");
 
 
-    public static void execute(ModalInteractionEvent event, String type, String age, String descriptionInput) {
+    public static void execute(ModalInteractionEvent event, String type, String age, String descriptionInput, String timeZone) {
         Guild guild = event.getGuild();
         if (guild == null) {
             event.reply("Ошибка: гильдия не найдена.").setEphemeral(true).queue();
@@ -94,7 +94,8 @@ public class CreateSys extends ListenerAdapter {
                             .addField("📂 Тип:", type, false)
                             .addField("🎂 Возраст:", age, false)
                             .addField("📝 Описание проблемы:", DataStorage.getInstance().getTicketDes().get(ticketNumber), false)
-                            .addField("📄 Ticket ID", ticketName, false) // Добавляем Ticket ID в embed
+                            .addField("\uD83D\uDD5D Часовой пояс:", timeZone, false)
+                            .addField("📄 Ticket ID", ticketName, false)
                             .setFooter("Сообщение от " + member.getEffectiveName(), member.getUser().getAvatarUrl())
                             .setTimestamp(Instant.now());
 

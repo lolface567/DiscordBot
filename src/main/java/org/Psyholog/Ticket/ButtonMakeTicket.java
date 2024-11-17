@@ -26,9 +26,13 @@ public class ButtonMakeTicket extends ListenerAdapter {
                     .setPlaceholder("Ваш возраст")
                     .build();
 
+            TextInput time = TextInput.create("timeZone", "Ваш часовой пояс", TextInputStyle.SHORT)
+                    .setPlaceholder("Ваш часовой пояс")
+                    .build();
+
 
             Modal modalBug = Modal.create("bug-report", "Вопрос к психологу")
-                    .addComponents(ActionRow.of(type), ActionRow.of(age), ActionRow.of(DescriptionInput))
+                    .addComponents(ActionRow.of(type), ActionRow.of(age), ActionRow.of(time), ActionRow.of(DescriptionInput))
                     .build();
 
             event.replyModal(modalBug).queue();
@@ -40,7 +44,8 @@ public class ButtonMakeTicket extends ListenerAdapter {
             String type = event.getValue("type").getAsString();
             String age = event.getValue("age").getAsString();
             String DescriptionInput = event.getValue("body").getAsString();
-            CreateSys.execute(event, type, age, DescriptionInput);
+            String timeZone = event.getValue("timeZone").getAsString();
+            CreateSys.execute(event, type, age, DescriptionInput, timeZone);
             event.reply("Ваш запрос принят!").setEphemeral(true).queue();
         }
     }

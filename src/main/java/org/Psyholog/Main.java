@@ -43,12 +43,15 @@ public class Main {
                         new CreateCommand(), new ButtonMakeTicket(), new CreateSys(),
                         new MenuCommandEx(), new ClearOpenCommand(), new MenuButtons(),
                         new ReTakeTicketOnModal(), new ReTakeButtonInteract(), new FeedBackInter(),
-                        new ClearCloseCommand(), new CheckPsyholog())
+                        new ClearCloseCommand(), new CheckPsyholog(), new ClearTicketsDes())
                 .build();
+        System.out.println("Version 1.5.2");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();
         commands.addCommands(
+                Commands.slash("clear-ticket-des", "Чистит базу данных от описаний сохраненных тикетов")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("create-ticket-sys", "Создает тикет систему")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("rating", "Чекает средний бал психолога")
