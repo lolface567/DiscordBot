@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.Psyholog.Ticket.*;
+import org.Psyholog.voiceChanelCreator.VoiceInteract;
 
 
 import java.util.EnumSet;
@@ -32,7 +33,8 @@ public class Main {
                 GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.DIRECT_MESSAGE_POLLS,
-                GatewayIntent.DIRECT_MESSAGE_TYPING
+                GatewayIntent.DIRECT_MESSAGE_TYPING,
+                GatewayIntent.GUILD_VOICE_STATES
         );
 
         // Build the JDA instance
@@ -43,9 +45,9 @@ public class Main {
                         new CreateCommand(), new ButtonMakeTicket(), new CreateSys(),
                         new MenuCommandEx(), new ClearOpenCommand(), new MenuButtons(),
                         new ReTakeTicketOnModal(), new ReTakeButtonInteract(), new FeedBackInter(),
-                        new ClearCloseCommand(), new CheckPsyholog(), new ClearTicketsDes())
+                        new ClearCloseCommand(), new CheckPsyholog(), new ClearTicketsDes(), new VoiceInteract())
                 .build();
-        System.out.println("Version 1.5.2");
+        System.out.println("Version 1.5.3");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();

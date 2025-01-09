@@ -94,6 +94,8 @@ public class MenuButtons extends ListenerAdapter {
                         throw new RuntimeException(e);
                     }
                     System.out.println("Данные сохранены");
+                }else {
+                    event.reply("Что то не так...").setEphemeral(true).queue();
                 }
 
                 if (chel != null) {

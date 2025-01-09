@@ -116,7 +116,7 @@ public class CreateSys extends ListenerAdapter {
                                 .setActionRow(
                                         Button.success("take-ticket:" + ticketNumber + ":" + ticketName, "Взять тикет")
                                                 .withEmoji(Emoji.fromUnicode("\uD83D\uDCE5") // Add ticket ID to the button ID
-                                )).queue();
+                                                )).queue();
                     }
                 });
     }
@@ -187,7 +187,7 @@ public class CreateSys extends ListenerAdapter {
             String ticketNumber = parts[1];
             String ticketName = parts[2];
             String ticketId = DataStorage.getInstance().getTicketChannelMap().get(ticketNumber);
-            System.out.println(ticketId);
+
 
             Guild guild = event.getGuild();
             if (guild == null) {
@@ -205,6 +205,8 @@ public class CreateSys extends ListenerAdapter {
                 event.reply("Ошибка: участник не найден.").setEphemeral(true).queue();
                 return;
             }
+
+            System.out.println(member.getId() + " взял тикет " + ticketId);
 
             TextChannel textChannel = guild.getTextChannelById(ticketId);
             Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));

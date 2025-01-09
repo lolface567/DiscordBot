@@ -37,6 +37,7 @@ public class EmbedMesage {
             System.err.println("Exception caught: " + e.getMessage());
             e.printStackTrace();
         }
+        event.reply("Сообщение отправлено").setEphemeral(true).queue();
     }
 
     private static void sendOrUpdateMessage(TextChannel channel, Guild guild, SlashCommandInteractionEvent event) {
