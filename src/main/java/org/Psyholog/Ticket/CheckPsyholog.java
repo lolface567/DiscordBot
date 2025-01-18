@@ -44,7 +44,8 @@ public class CheckPsyholog extends ListenerAdapter {
 
                 embed.setTitle("🎓 Средний балл психолога");
                 embed.setDescription("🔹 Психолог: **" + member.getEffectiveName() + "**\n"
-                        + "📊 Средний балл: **" + averageRating + "**");
+                        + "📊 Средний балл: **" + averageRating + "**" +
+                        "\n📊 Количество оценок: " + "**" + DataStorage.getInstance().getPsychologistRatings().get(member.getId()).size() + "**");
                 embed.setColor(0x00ADEF);  // Устанавливаем цвет (например, синий)
                 embed.setThumbnail(member.getEffectiveAvatarUrl());
                 embed.build();
@@ -58,17 +59,16 @@ public class CheckPsyholog extends ListenerAdapter {
             Guild guild = event.getGuild();
             Map<String, List<Integer>> psychologistRatings = DataStorage.getInstance().getPsychologistRatings();
 
-            // Рассчитываем средний рейтинг для каждого психолога и сортируем по среднему баллу
-            Map<String, Double> sortedPsychologists = psychologistRatings.entrySet().stream()
-                    .sorted((entry1, entry2) -> Double.compare(
-                            DataStorage.getInstance().getAverageRating(entry2.getKey()),  // Сравниваем средние рейтинги
-                            DataStorage.getInstance().getAverageRating(entry1.getKey())
+            Map<String, Long> sortedPsychologists = psychologistRatings.entrySet().stream()
+                    .sorted((entry1, entry2) -> Long.compare(
+                            entry2.getValue().size(), // Сравниваем по количеству оценок
+                            entry1.getValue().size()
                     ))
                     .collect(
                             Collectors.toMap(
-                                    Map.Entry::getKey,  // Ключ — это ID психолога
-                                    entry -> DataStorage.getInstance().getAverageRating(entry.getKey()),  // Значение — это средний рейтинг
-                                    (e1, e2) -> e1,  // На случай дубликатов
+                                    Map.Entry::getKey, // Ключ — это ID психолога
+                                    entry -> (long) entry.getValue().size(), // Значение — это количество оценок
+                                    (e1, e2) -> e1, // На случай дубликатов
                                     LinkedHashMap::new // Сохраняем порядок сортировки
                             )
                     );
@@ -79,16 +79,25 @@ public class CheckPsyholog extends ListenerAdapter {
             embedBuilder.setColor(0x00ADEF);
 
             sortedPsychologists.entrySet().stream()
-                    .limit(10)
+                    .limit(10) // Ограничиваем вывод до топ-10
                     .forEach(entry -> {
                         String id = entry.getKey();
-                        Double averageRating = entry.getValue();
-                        Member psychologist = guild.getMemberById(id);  // Получаем члена гильдии по ID психолога
+                        Long reviewCount = entry.getValue();
+                        Double averageRating = DataStorage.getInstance().getAverageRating(id); // Получаем средний рейтинг
+                        Member psychologist = guild.getMemberById(id); // Получаем члена гильдии по ID психолога
                         if (psychologist != null) { // Проверяем, что психолог существует
-                            embedBuilder.addField(psychologist.getEffectiveName(), String.format("Средний рейтинг: %.2f", averageRating), false);
+                            embedBuilder.addField(
+                                    psychologist.getEffectiveName(),
+                                    String.format("Средний рейтинг: %.2f\nКоличество оценок: %d", averageRating, reviewCount),
+                                    false
+                            );
                         } else {
                             System.out.println("Психолог с ID " + id + " не найден!"); // Отладка
-                            embedBuilder.addField("Психолог не найден", "ID: " + id, false); // Если психолог не найден
+                            embedBuilder.addField(
+                                    "Психолог не найден",
+                                    String.format("ID: %s\nКоличество оценок: %d", id, reviewCount),
+                                    false
+                            );
                         }
                     });
 

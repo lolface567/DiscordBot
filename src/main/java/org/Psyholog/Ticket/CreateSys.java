@@ -3,12 +3,14 @@ package org.Psyholog.Ticket;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
-import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -19,10 +21,11 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 
-
 import java.awt.*;
 import java.time.Instant;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -294,6 +297,7 @@ public class CreateSys extends ListenerAdapter {
             }
         }
         if (event.getButton().getId().startsWith("feedback:")) { // Check for feedback button with ticket ID
+            Member member = event.getMember();
             String ticketId = event.getButton().getId().split(":")[1]; // Extract ticket ID from button ID
             TextInput descriptionInput = TextInput.create("body", "Отзыв", TextInputStyle.PARAGRAPH)
                     .setPlaceholder("Напишите Ваш отзыв")
@@ -305,7 +309,7 @@ public class CreateSys extends ListenerAdapter {
                     .setPlaceholder("Ваша оценка")
                     .build();
 
-            Modal modalBug = Modal.create("feedback:" + ticketId, "Напишите краткий отзыв") // Add ticket ID to modal ID
+            Modal modalBug = Modal.create("feedback:" + ticketId + ":" + member.getId(), "Напишите краткий отзыв") // Add ticket ID to modal ID
                     .addComponents(ActionRow.of(ratingInput), ActionRow.of(descriptionInput))
                     .build();
 

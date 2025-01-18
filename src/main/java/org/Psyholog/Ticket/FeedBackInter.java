@@ -23,6 +23,7 @@ public class FeedBackInter extends ListenerAdapter {
     public void onModalInteraction(ModalInteractionEvent event) {
         if (event.getModalId().startsWith("feedback:")) { // Check for feedback modal with ticket ID
             String ticketId = event.getModalId().split(":")[1]; // Extract ticket ID from modal ID
+            String memberId = event.getModalId().split(":")[2];
             String rating = event.getValue("steamId").getAsString();
             String feedbackText = event.getValue("body").getAsString();
 
@@ -37,7 +38,7 @@ public class FeedBackInter extends ListenerAdapter {
                 return;
             }
 
-            Member member = event.getMember();
+            Member member = guild.getMemberById(memberId);
             if (member == null) {
                 event.reply("Ошибка: мембер не найден.").setEphemeral(true).queue();
                 return;
@@ -71,7 +72,7 @@ public class FeedBackInter extends ListenerAdapter {
                     .addField(":star:Оценка", rating + " из 10", false) // Добавить информацию об оценке
                     .addField(":memo:Отзыв", feedbackText, false)
                     .addField(":busts_in_silhouette:Психолог", psychologist.getAsMention(), false) // Добавить имя психолога
-                    .setFooter("Ваш средний бал " + averageRating, member.getUser().getAvatarUrl()) // Добавить футер с аватаром пользователя
+                    .setFooter("Ваш средний бал " + averageRating, psychologist.getUser().getAvatarUrl()) // Добавить футер с аватаром пользователя
                     .setTimestamp(Instant.now());
             if (rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5")) {
                 embedBuilder.setColor(Color.red);
