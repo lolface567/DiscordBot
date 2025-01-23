@@ -1,4 +1,4 @@
-package org.Psyholog.Ticket;
+package org.Psyholog.Menu;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -17,12 +17,14 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import org.Psyholog.Ticket.CreateTicket;
+import org.Psyholog.Ticket.DataStorage;
 
 import java.awt.*;
 import java.time.Instant;
 import java.util.*;
 
-import static org.Psyholog.Ticket.CreateSys.*;
+import static org.Psyholog.Ticket.CreateTicket.*;
 
 public class MenuButtons extends ListenerAdapter {
     public static Set<String> userActiveVoiceMemory = new HashSet<>();
@@ -84,7 +86,7 @@ public class MenuButtons extends ListenerAdapter {
                     DataStorage.getInstance().getClosedTickets().add(ticketId);
                     DataStorage.getInstance().getTicketDes().remove(ticketIdname);
                     try {
-                        CreateSys.userActiveTicketsMemory.remove(user);
+                        CreateTicket.userActiveTicketsMemory.remove(user);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -171,7 +173,7 @@ public class MenuButtons extends ListenerAdapter {
 
                 Guild guild = event.getGuild();
                 Member member = event.getMember();
-                Role psyhologyRole = guild.getRoleById(CreateSys.psyhologRole);
+                Role psyhologyRole = guild.getRoleById(CreateTicket.psyhologRole);
                 if (member.getRoles().contains(psyhologyRole)) {
 
                     TextInput descriptionInput = TextInput.create("why", "Причина смены", TextInputStyle.SHORT)

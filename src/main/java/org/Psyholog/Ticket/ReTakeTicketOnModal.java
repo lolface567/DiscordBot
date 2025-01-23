@@ -34,7 +34,7 @@ public class ReTakeTicketOnModal extends ListenerAdapter {
                 return;
             }
 
-            TextChannel adminTextChannel = guild.getTextChannelById(CreateSys.adminChannel);
+            TextChannel adminTextChannel = guild.getTextChannelById(CreateTicket.adminChannel);
 
             if (ticketId == null) {
                 event.reply("Ошибка: тикет не найден.").setEphemeral(true).queue();
@@ -47,7 +47,7 @@ public class ReTakeTicketOnModal extends ListenerAdapter {
                 return;
             }
 
-            Role role = guild.getRoleById(CreateSys.psyhologRole);
+            Role role = guild.getRoleById(CreateTicket.psyhologRole);
             if (role == null) {
                 event.reply("Ошибка: роль не найдена.").setEphemeral(true).queue();
                 return;

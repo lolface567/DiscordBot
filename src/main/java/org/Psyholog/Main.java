@@ -11,6 +11,14 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import org.Psyholog.CheakPsyholog.CheckPsyhologCommand;
+import org.Psyholog.CheakPsyholog.TopPsyhologCommand;
+import org.Psyholog.DevCommands.*;
+import org.Psyholog.Feedback.FeedBackCommand;
+import org.Psyholog.Feedback.FeedBackSystem;
+import org.Psyholog.Menu.MenuButtons;
+import org.Psyholog.Menu.MenuCommandEx;
+import org.Psyholog.Menu.MenuSystem;
 import org.Psyholog.Ticket.*;
 import org.Psyholog.voiceChanelCreator.VoiceInteract;
 
@@ -42,12 +50,16 @@ public class Main {
                 .setActivity(Activity.listening("Ваши проблемы"))
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .addEventListeners(
-                        new CreateCommand(), new ButtonMakeTicket(), new CreateSys(),
+                        new CreateTicketSystemCommand(), new CreateAndSendTicket(), new CreateTicket(),
                         new MenuCommandEx(), new ClearOpenCommand(), new MenuButtons(),
-                        new ReTakeTicketOnModal(), new ReTakeButtonInteract(), new FeedBackInter(),
-                        new ClearCloseCommand(), new CheckPsyholog(), new ClearTicketsDes(), new VoiceInteract())
+                        new ReTakeTicketOnModal(), new ReTakeButtonInteract(), new FeedBackSystem(),
+                        new ClearCloseCommand(), new CheckPsyhologCommand(), new ClearDescriptionCommand(),
+                        new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
+                        new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage()
+                )
                 .build();
-        System.out.println("Version 1.5.3");
+        System.out.println("Bot Started!");
+        System.out.println("Version 1.5.4");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();

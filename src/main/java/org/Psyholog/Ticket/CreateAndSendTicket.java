@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 
-public class ButtonMakeTicket extends ListenerAdapter {
+public class CreateAndSendTicket extends ListenerAdapter {
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getComponentId().equals("ticket")) {
@@ -31,21 +31,21 @@ public class ButtonMakeTicket extends ListenerAdapter {
                     .build();
 
 
-            Modal modalBug = Modal.create("bug-report", "Вопрос к психологу")
+            Modal ticketCreate = Modal.create("ticket-create", "Вопрос к психологу")
                     .addComponents(ActionRow.of(type), ActionRow.of(age), ActionRow.of(time), ActionRow.of(DescriptionInput))
                     .build();
 
-            event.replyModal(modalBug).queue();
+            event.replyModal(ticketCreate).queue();
         }
     }
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
-        if (event.getModalId().equals("bug-report")) {
+        if (event.getModalId().equals("ticket-create")) {
             String type = event.getValue("type").getAsString();
             String age = event.getValue("age").getAsString();
             String DescriptionInput = event.getValue("body").getAsString();
             String timeZone = event.getValue("timeZone").getAsString();
-            CreateSys.execute(event, type, age, DescriptionInput, timeZone);
+            CreateTicket.execute(event, type, age, DescriptionInput, timeZone);
             event.reply("Ваш запрос принят!").setEphemeral(true).queue();
         }
     }

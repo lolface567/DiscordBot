@@ -4,12 +4,12 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 
-public class CreateCommand extends ListenerAdapter {
+public class CreateTicketSystemCommand extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("create-ticket-sys")) {
-            EmbedMesage.execute(event);
+            TicketSystemMessage.execute(event);
         }
     }
 }

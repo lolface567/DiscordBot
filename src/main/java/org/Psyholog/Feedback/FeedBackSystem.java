@@ -1,4 +1,4 @@
-package org.Psyholog.Ticket;
+package org.Psyholog.Feedback;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.Psyholog.Ticket.DataStorage;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -16,9 +17,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.Psyholog.Ticket.CreateSys.feedbackChannel;
+import static org.Psyholog.Ticket.CreateTicket.feedbackChannel;
 
-public class FeedBackInter extends ListenerAdapter {
+public class FeedBackSystem extends ListenerAdapter {
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
         if (event.getModalId().startsWith("feedback:")) { // Check for feedback modal with ticket ID
@@ -32,6 +33,7 @@ public class FeedBackInter extends ListenerAdapter {
                 event.reply("Ошибка: гильдия не найдена.").setEphemeral(true).queue();
                 return;
             }
+
             TextChannel feedBackChannel = guild.getTextChannelById(feedbackChannel);
             if (feedBackChannel == null) {
                 event.reply("Ошибка: канал для отзывов не найден.").setEphemeral(true).queue();
@@ -45,13 +47,12 @@ public class FeedBackInter extends ListenerAdapter {
             }
 
             Member psychologist = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketId));// Get psychologist for the ticket
-
             if (member.getId().equals(psychologist.getId())) {
                 event.reply("Ты психолог этого тикета").setEphemeral(true).queue();
                 return;
             }
 
-            if (rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5") ||
+            if (rating.equals("0") || rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5") ||
                     rating.equals("6") || rating.equals("7") || rating.equals("8") || rating.equals("9") || rating.equals("10")) {
 
                 DecimalFormat df = new DecimalFormat("#.##");
@@ -74,7 +75,7 @@ public class FeedBackInter extends ListenerAdapter {
                     .addField(":busts_in_silhouette:Психолог", psychologist.getAsMention(), false) // Добавить имя психолога
                     .setFooter("Ваш средний бал " + averageRating, psychologist.getUser().getAvatarUrl()) // Добавить футер с аватаром пользователя
                     .setTimestamp(Instant.now());
-            if (rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5")) {
+            if (rating.equals("0") || rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5")) {
                 embedBuilder.setColor(Color.red);
                 embedBuilder.setTitle(":x:Новый негативный отзыв(");
             }

@@ -16,7 +16,7 @@ import java.awt.*;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
-import static org.Psyholog.Ticket.CreateSys.scheduler;
+import static org.Psyholog.Ticket.CreateTicket.scheduler;
 
 public class ReTakeButtonInteract extends ListenerAdapter {
     @Override
@@ -34,7 +34,7 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                 return;
             }
 
-            Role psyhologRole = guild.getRoleById(CreateSys.psyhologRole);
+            Role psyhologRole = guild.getRoleById(CreateTicket.psyhologRole);
             Member pshyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketIdName));
             if(pshyholog == null){
                 event.reply("Ошибка: психолог не найден.").setEphemeral(true).queue();
@@ -93,6 +93,7 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                         .setTimestamp(java.time.Instant.now());
 
                 mainChanel.sendMessageEmbeds(embedBuilder.build()).queue();
+                System.out.println("Психолог " + member.getEffectiveName() + " хочет заменить психолога!");
             }
             else event.reply("Ошибка. у вас нету прав").setEphemeral(true).queue();
         }

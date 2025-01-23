@@ -1,10 +1,11 @@
-package org.Psyholog.Ticket;
+package org.Psyholog.DevCommands;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.Ticket.DataStorage;
 
-public class ClearTicketsDes extends ListenerAdapter {
+public class ClearDescriptionCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if ("clear-ticket-des".equals(event.getName())) {

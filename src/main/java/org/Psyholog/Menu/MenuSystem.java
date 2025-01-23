@@ -1,15 +1,16 @@
-package org.Psyholog.Ticket;
+package org.Psyholog.Menu;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.*;
 import java.time.Instant;
 
-public class MenuSys {
+public class MenuSystem extends ListenerAdapter {
     public static void execute(SlashCommandInteractionEvent event) {
         // Отправка предварительного ответа, чтобы избежать ошибки "Приложение не отвечает"
         event.deferReply().queue();
