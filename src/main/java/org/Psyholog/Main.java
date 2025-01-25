@@ -59,7 +59,7 @@ public class Main {
                 )
                 .build();
         System.out.println("Bot Started!");
-        System.out.println("Version 1.5.4");
+        System.out.println("Version 1.5.5");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();
