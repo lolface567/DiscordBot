@@ -70,7 +70,7 @@ public class Main {
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("rating", "Чекает средний бал психолога")
                         .addOption(OptionType.STRING,"name" , "Психолог"),
-                Commands.slash("top", "Показывает топ хохлов"),
+                Commands.slash("top", "Показывает топ психологов на сервере"),
                 Commands.slash("menu", "Вызывает меню психолога"),
                 Commands.slash("clear-open-tickets", "Удаляет из базы активные тикеты")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),

@@ -86,9 +86,6 @@ public class TicketSystemMessage extends ListenerAdapter {
                 .filter(member -> member.getOnlineStatus().equals(OnlineStatus.ONLINE))
                 .count();
 
-        System.out.println("Всего психологов с ролью: " + psychologists.size());
-        System.out.println("Психологов онлайн: " + onlinePsychologists);
-
         return new EmbedBuilder()
                 .setTitle("Связаться с психологом")
                 .setColor(Color.DARK_GRAY)

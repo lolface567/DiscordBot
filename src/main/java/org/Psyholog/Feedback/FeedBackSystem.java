@@ -81,6 +81,7 @@ public class FeedBackSystem extends ListenerAdapter {
             }
 
             feedBackChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+            System.out.println("Пользователь " + member.getEffectiveName() + " Оставил отзыв!");
 
             // Update the feedback button to show that feedback has been submitted
             String channelId = DataStorage.getInstance().getTicketChannelMap().get(ticketId);

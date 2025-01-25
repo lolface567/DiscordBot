@@ -50,8 +50,6 @@ public class TakeTicketButton extends ListenerAdapter {
                 return;
             }
 
-            System.out.println(member.getId() + " взял тикет " + ticketId);
-
             TextChannel textChannel = guild.getTextChannelById(ticketId);
             Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
 
@@ -67,7 +65,6 @@ public class TakeTicketButton extends ListenerAdapter {
                 }, 10, TimeUnit.MINUTES);
 
                 DataStorage.getInstance().getClosedTickets().add(ticketId);
-                userActiveTicketsMemory.remove(user);
                 DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
                 DataStorage.getInstance().getTicketDes().remove(ticketId);
                 DataStorage.getInstance().saveData();
@@ -128,11 +125,15 @@ public class TakeTicketButton extends ListenerAdapter {
                 EmbedBuilder embedBuilder = new EmbedBuilder()
                         .setColor(Color.DARK_GRAY)
                         .setTitle("🎉 Психолог найден!")
-                        .setDescription("Ваш психолог: " + member.getAsMention())
+                        .setDescription("Ваш психолог: " + member.getAsMention() +
+                                "\nЕго средний бал: " + DataStorage.getInstance().getAverageRating(member.getId()) +
+                                "\nЕго количество оценок: " + DataStorage.getInstance().getPsychologistRatings().get(member.getId()).size())  //Тестить этот код
                         .addField("✨ Поддержка доступна", "Вы можете начать обсуждение.", false)
                         .setFooter("Мы здесь, чтобы помочь вам!")
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+
+                System.out.println(member.getEffectiveName() + " взял тикет " + ticketId);
             } else {
                 event.reply("Ошибка: канал не найден.").setEphemeral(true).queue();
             }

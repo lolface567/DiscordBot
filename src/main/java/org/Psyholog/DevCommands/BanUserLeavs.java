@@ -53,5 +53,6 @@ public class BanUserLeavs extends ListenerAdapter {
                 success -> System.out.println("Юзер забанен"),
                 error -> System.err.println("Не удалось забанить пользователя: " + error.getMessage())
         );
+
     }
 }

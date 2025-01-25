@@ -16,19 +16,20 @@ public class MenuCommandEx extends ListenerAdapter {
         Guild guild = event.getGuild();
         Member member = event.getMember();
         TextChannel textChannel = event.getChannel().asTextChannel();
+        boolean curentText = DataStorage.getInstance().getTicketChannelMap().containsValue(textChannel.getId());
         assert guild != null;
         Role role = guild.getRoleById(Dotenv.load().get("psyhologRole"));
 
         if (event.getName().equals("menu")) {
-            if (textChannel.getId().equals(DataStorage.getInstance().getTicketChannelMap().containsKey(textChannel.getId()))) { // Тут может быть ошибка
+            if(curentText){
                 if (member.getRoles().contains(role)) {
                     MenuSystem.execute(event);
                     System.out.println("Меню вызвал " + member.getEffectiveName());
-                }else {
+                } else {
                     event.reply("У вас нет роли психолога").setEphemeral(true).queue();
                 }
-            } else {
-                event.reply("Меню можно вызвать только в тикете!").setEphemeral(true).queue();
+            }else {
+                event.reply("Команду menu можно прописывать только в тикете!").setEphemeral(true).queue();
             }
         }
     }

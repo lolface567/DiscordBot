@@ -72,8 +72,6 @@ public class MenuButtons extends ListenerAdapter {
                 String user = DataStorage.getInstance().getUserActiveTickets().get(ticketId);
                 Member chel = guild.getMemberById(user);
 
-                System.out.println(chel.getEffectiveName());
-
                 if (textChannel != null) {
                     textChannel.getManager().setParent(category).queue(
                             success -> {
