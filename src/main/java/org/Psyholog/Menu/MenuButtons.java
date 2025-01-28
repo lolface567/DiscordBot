@@ -17,8 +17,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import org.Psyholog.Main;
 import org.Psyholog.Ticket.CreateTicket;
 import org.Psyholog.Ticket.DataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -27,6 +30,7 @@ import java.util.*;
 import static org.Psyholog.Ticket.CreateTicket.*;
 
 public class MenuButtons extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(MenuButtons.class);
     public static Set<String> userActiveVoiceMemory = new HashSet<>();
     public static Map<String, String> userActiveVoiceMapMemory = new HashMap<>();
 
@@ -55,7 +59,7 @@ public class MenuButtons extends ListenerAdapter {
                 return;
             }
 
-            Role role = guild.getRoleById(psyhologRole);
+            Role role = guild.getRoleById(PSYCHOLOGY_ROLE);
             if (role == null) {
                 event.reply("Ошибка: роль не найдена.").setEphemeral(true).queue();
                 return;
@@ -68,7 +72,7 @@ public class MenuButtons extends ListenerAdapter {
                 }
 
                 TextChannel textChannel = guild.getTextChannelById(ticketId);
-                Category category = guild.getCategoryById(closeTicketCategory);
+                Category category = guild.getCategoryById(CLOSE_TICKET_CATEGORY);
                 String user = DataStorage.getInstance().getUserActiveTickets().get(ticketId);
                 Member chel = guild.getMemberById(user);
 
@@ -93,7 +97,7 @@ public class MenuButtons extends ListenerAdapter {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    System.out.println("Данные сохранены");
+                    logger.info("Данные сохранены");
                 }else {
                     event.reply("Что то не так...").setEphemeral(true).queue();
                 }
@@ -103,7 +107,7 @@ public class MenuButtons extends ListenerAdapter {
                             .setAllowed(Permission.VIEW_CHANNEL)
                             .setDenied(Permission.MESSAGE_SEND);
                 } else {
-                    System.out.println("Чеееееел не найден");
+                    logger.info("Чеееееел не найден");
                 }
 
                 PermissionOverride rolePermissionOverride = textChannel.getPermissionOverride(role);
@@ -114,8 +118,8 @@ public class MenuButtons extends ListenerAdapter {
                             .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
                             .setDenied(EnumSet.of(Permission.MESSAGE_SEND))
                             .queue(
-                                    success -> System.out.println("Права успешно обновлены."),
-                                    error -> System.err.println("Ошибка при обновлении прав: " + error.getMessage())
+                                    success -> logger.info("Права успешно установленны."),
+                                    error -> logger.error("Ошибка при устанновлении прав: " + error.getMessage())
                             );
                 } else {
                     // Если разрешение не существует, создайте новое
@@ -123,8 +127,8 @@ public class MenuButtons extends ListenerAdapter {
                             .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
                             .setDenied(EnumSet.of(Permission.MESSAGE_SEND))
                             .queue(
-                                    success -> System.out.println("Права успешно установлены."),
-                                    error -> System.err.println("Ошибка при установке прав: " + error.getMessage())
+                                    success -> logger.info("Права успешно обновлены."),
+                                    error -> logger.error("Ошибка при обновлении прав: " + error.getMessage())
                             );
                 }
 
@@ -171,7 +175,7 @@ public class MenuButtons extends ListenerAdapter {
 
                 Guild guild = event.getGuild();
                 Member member = event.getMember();
-                Role psyhologyRole = guild.getRoleById(CreateTicket.psyhologRole);
+                Role psyhologyRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
                 if (member.getRoles().contains(psyhologyRole)) {
 
                     TextInput descriptionInput = TextInput.create("why", "Причина смены", TextInputStyle.SHORT)
@@ -194,7 +198,7 @@ public class MenuButtons extends ListenerAdapter {
             }
         } else if (event.getButton().getId().startsWith("voice:")) {
             Guild guild = event.getGuild();
-            Role role = guild.getRoleById(psyhologRole);
+            Role role = guild.getRoleById(PSYCHOLOGY_ROLE);
             Member proverka = event.getMember();
             if (role == null) {
                 event.reply("Ошибка: роль не найдена.").setEphemeral(true).queue();
@@ -215,7 +219,7 @@ public class MenuButtons extends ListenerAdapter {
             Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
 
             if (proverka.getRoles().contains(role) && !userActiveVoiceMemory.contains(user.getId())) {
-                Category voice = guild.getCategoryById(voiceCategory);
+                Category voice = guild.getCategoryById(VOICE_CATEGORY);
                 VoiceChannel newVoiceChannel = guild.createVoiceChannel(user.getEffectiveName() + " И " + psyholog.getEffectiveName())
                         .setParent(voice)
                         .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT))

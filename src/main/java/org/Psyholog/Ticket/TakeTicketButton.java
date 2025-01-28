@@ -12,6 +12,9 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.Psyholog.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -20,9 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.Psyholog.Ticket.CreateTicket.userActiveTicketsMemory;
-
 public class TakeTicketButton extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(TakeTicketButton.class);
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {   // Обработка кнопки взять тикет
@@ -92,7 +94,7 @@ public class TakeTicketButton extends ListenerAdapter {
                         error -> event.reply("Ошибка при обновлении имени канала: " + error.getMessage()).setEphemeral(true).queue()
                 );
 
-                Role psychologistRole = guild.getRoleById(CreateTicket.psyhologRole);
+                Role psychologistRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
                 if (psychologistRole == null) {
                     event.reply("Ошибка: роль психолога не найдена.").setEphemeral(true).queue();
                     return;
@@ -109,16 +111,16 @@ public class TakeTicketButton extends ListenerAdapter {
                     existingPermission.getManager()
                             .grant(EnumSet.of(Permission.VIEW_CHANNEL))
                             .queue(
-                                    success -> System.out.println("Права для участника успешно обновлены."),
-                                    error -> System.err.println("Ошибка при обновлении прав для участника: " + error.getMessage())
+                                    success -> logger.info("Права для участника успешно обновлены."),
+                                    error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
                             );
                 } else {
                     // Если разрешение не существует, создаем новое
                     textChannel.upsertPermissionOverride(member)
                             .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
                             .queue(
-                                    success -> System.out.println("Права для участника успешно установлены."),
-                                    error -> System.err.println("Ошибка при установке прав для участника: " + error.getMessage())
+                                    success -> logger.info("Права для участника успешно обновлены."),
+                                    error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
                             );
                 }
 
@@ -133,7 +135,7 @@ public class TakeTicketButton extends ListenerAdapter {
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
 
-                System.out.println(member.getEffectiveName() + " взял тикет " + ticketId);
+                logger.info(member.getEffectiveName() + " взял тикет " + ticketId);
             } else {
                 event.reply("Ошибка: канал не найден.").setEphemeral(true).queue();
             }

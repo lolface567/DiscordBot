@@ -6,7 +6,10 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.Main;
 import org.Psyholog.Ticket.DataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -15,12 +18,13 @@ import java.util.concurrent.TimeUnit;
 import static org.Psyholog.Ticket.CreateTicket.userActiveTicketsMemory;
 
 public class BanUserLeavs extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(BanUserLeavs.class);
     @Override
     public void onGuildMemberRemove(GuildMemberRemoveEvent event) { // Если чубрик ливнул с активным тикетом НУЖНО ПРОВЕРИТЬ ЭТОТ КОД
         Member leavMember = event.getMember();  // Получаем пользователя
 
         if (leavMember == null) {
-            System.out.println("Member object is null, possibly due to member already leaving the server.");
+            logger.error("Member object is null, possibly due to member already leaving the server.");
             return; // Выход, если нет информации о пользователе
         }
 
@@ -45,13 +49,13 @@ public class BanUserLeavs extends ListenerAdapter {
                 DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
                 userActiveTicketsMemory.remove(stringMember);
             } else {
-                System.out.println("Текстовый канал не найден.");
+                logger.error("Текстовый канал не найден.");
             }
         }
         // Баним пользователя на 10 дней
         guild.ban(leavMember, 0, TimeUnit.DAYS).queue(
-                success -> System.out.println("Юзер забанен"),
-                error -> System.err.println("Не удалось забанить пользователя: " + error.getMessage())
+                success -> logger.info("Юзер забанен"),
+                error -> logger.error("Не удалось забанить пользователя: " + error.getMessage())
         );
 
     }

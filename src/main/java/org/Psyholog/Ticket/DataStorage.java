@@ -2,12 +2,16 @@ package org.Psyholog.Ticket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.Psyholog.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 public class DataStorage {
+    private static final Logger logger = LoggerFactory.getLogger(DataStorage.class);
 
     private static final String DATA_FILE_PATH = "ticketData.json"; // JSON format for data storage
 
@@ -52,7 +56,7 @@ public class DataStorage {
                 this.getTicketDes = data.getTicketDes() != null ? data.getTicketDes() : new HashMap<>();
                 this.psychologistRatings = data.getPsychologistRatings() != null ? data.getPsychologistRatings() : new HashMap<>();
             } catch (IOException e) {
-                System.err.println("Не удалось загрузить данные тикетов: " + e.getMessage());
+                logger.error("Не удалось загрузить данные тикетов: " + e.getMessage());
                 e.printStackTrace();
                 // Инициализация пустыми коллекциями в случае ошибки
                 this.ticketChannelMap = new HashMap<>();
@@ -76,9 +80,9 @@ public class DataStorage {
                     this.ticketPsychologists, this.userActiveTickets,
                     this.getTicketDes, this.psychologistRatings, this.ticketCounter);
             objectMapper.writeValue(file, data);
-            System.out.println("Данные успешно сохранены в " + DATA_FILE_PATH);
+            logger.info("Данные успешно сохранены в " + DATA_FILE_PATH);
         } catch (IOException e) {
-            System.err.println("Не удалось сохранить данные тикетов: " + e.getMessage());
+            logger.error("Не удалось сохранить данные тикетов: " + e.getMessage());
             e.printStackTrace();
         }
     }

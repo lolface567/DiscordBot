@@ -22,6 +22,7 @@ public class MenuCommandEx extends ListenerAdapter {
 
         if (event.getName().equals("menu")) {
             if(curentText){
+                assert member != null;
                 if (member.getRoles().contains(role)) {
                     MenuSystem.execute(event);
                     System.out.println("Меню вызвал " + member.getEffectiveName());

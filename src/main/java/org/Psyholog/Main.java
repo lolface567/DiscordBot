@@ -21,12 +21,16 @@ import org.Psyholog.Menu.MenuCommandEx;
 import org.Psyholog.Menu.MenuSystem;
 import org.Psyholog.Ticket.*;
 import org.Psyholog.voiceChanelCreator.VoiceInteract;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.EnumSet;
 
 
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
         // Load environment variables
         Dotenv dotenv = Dotenv.configure()
@@ -55,16 +59,19 @@ public class Main {
                         new ReTakeTicketOnModal(), new ReTakeButtonInteract(), new FeedBackSystem(),
                         new ClearCloseCommand(), new CheckPsyhologCommand(), new ClearDescriptionCommand(),
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
-                        new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage()
+                        new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
+                        new ClearKickedPsyholog()
                 )
                 .build();
-        System.out.println("Bot Started!");
-        System.out.println("Version 1.5.5");
+        logger.info("Bot Started!");
+        logger.info("Version 1.5.6");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();
         commands.addCommands(
                 Commands.slash("clear-ticket-des", "Чистит базу данных от описаний сохраненных тикетов")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                Commands.slash("clear-baned-psyholog", "Чистит базу данных от снятых психологов")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("create-ticket-sys", "Создает тикет систему")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),

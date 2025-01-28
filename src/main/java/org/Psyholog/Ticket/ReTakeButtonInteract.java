@@ -11,6 +11,9 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.Psyholog.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.EnumSet;
@@ -19,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 import static org.Psyholog.Ticket.CreateTicket.scheduler;
 
 public class ReTakeButtonInteract extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(ReTakeButtonInteract.class);
+
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getButton().getId().startsWith("re-ticket:")) {
@@ -34,7 +39,7 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                 return;
             }
 
-            Role psyhologRole = guild.getRoleById(CreateTicket.psyhologRole);
+            Role psyhologRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
             Member pshyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketIdName));
             if(pshyholog == null){
                 event.reply("Ошибка: психолог не найден.").setEphemeral(true).queue();
@@ -67,8 +72,8 @@ public class ReTakeButtonInteract extends ListenerAdapter {
 
                 mainChanel.upsertPermissionOverride(pshyholog)
                                 .setDenied(EnumSet.of(Permission.VIEW_CHANNEL))
-                                        .queue(success -> System.out.println("Права успешно сняты."),
-                                                error -> System.err.println("Ошибка при установке прав: " + error.getMessage()));
+                                        .queue(success -> logger.info("Права успешно сняты."),
+                                                error -> logger.error("Ошибка при установке прав: " + error.getMessage()));
 
                 DataStorage.getInstance().getTicketPsychologists().remove(ticketIdName);
                 DataStorage.getInstance().saveData(); // Сохраняем данные в файл
@@ -78,8 +83,8 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                 mainChanel.upsertPermissionOverride(member)
                         .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND))
                         .queue(
-                                success -> System.out.println("Права успешно установлены."),
-                                error -> System.err.println("Ошибка при установке прав: " + error.getMessage())
+                                success -> logger.info("Права успешно установлены."),
+                                error -> logger.error("Ошибка при установке прав: " + error.getMessage())
                         );
 
                 EmbedBuilder embedBuilder = new EmbedBuilder()
@@ -93,7 +98,7 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                         .setTimestamp(java.time.Instant.now());
 
                 mainChanel.sendMessageEmbeds(embedBuilder.build()).queue();
-                System.out.println("Психолог " + member.getEffectiveName() + " хочет заменить психолога!");
+                logger.info("Психолог " + member.getEffectiveName() + " хочет заменить психолога!");
             }
             else event.reply("Ошибка. у вас нету прав").setEphemeral(true).queue();
         }

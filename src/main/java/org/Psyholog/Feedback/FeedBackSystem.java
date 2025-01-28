@@ -9,7 +9,10 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.Psyholog.Main;
 import org.Psyholog.Ticket.DataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -17,9 +20,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.Psyholog.Ticket.CreateTicket.feedbackChannel;
+import static org.Psyholog.Ticket.CreateTicket.FEEDBACK_CHANNEL;
 
 public class FeedBackSystem extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(FeedBackSystem.class);
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
         if (event.getModalId().startsWith("feedback:")) { // Check for feedback modal with ticket ID
@@ -34,7 +38,7 @@ public class FeedBackSystem extends ListenerAdapter {
                 return;
             }
 
-            TextChannel feedBackChannel = guild.getTextChannelById(feedbackChannel);
+            TextChannel feedBackChannel = guild.getTextChannelById(FEEDBACK_CHANNEL);
             if (feedBackChannel == null) {
                 event.reply("Ошибка: канал для отзывов не найден.").setEphemeral(true).queue();
                 return;
@@ -81,7 +85,7 @@ public class FeedBackSystem extends ListenerAdapter {
             }
 
             feedBackChannel.sendMessageEmbeds(embedBuilder.build()).queue();
-            System.out.println("Пользователь " + member.getEffectiveName() + " Оставил отзыв!");
+            logger.info("Пользователь " + member.getEffectiveName() + " Оставил отзыв!");
 
             // Update the feedback button to show that feedback has been submitted
             String channelId = DataStorage.getInstance().getTicketChannelMap().get(ticketId);

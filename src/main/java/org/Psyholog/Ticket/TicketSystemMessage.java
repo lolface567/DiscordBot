@@ -12,6 +12,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Message;
+import org.Psyholog.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TicketSystemMessage extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(TicketSystemMessage.class);
     private static Message currentMessage; // The message that we will update
     private static Timer timer; // Timer for scheduling updates
 
@@ -28,14 +32,14 @@ public class TicketSystemMessage extends ListenerAdapter {
             TextChannel channel = guild.getTextChannelById(Dotenv.load().get("embedMessage"));
 
             if (channel != null) {
-                System.out.println("Отправка сообщения в канал: " + channel.getName());
+                logger.info("Отправка сообщения в канал: " + channel.getName());
                 sendOrUpdateMessage(channel, guild, event);
             } else {
-                System.err.println("Не удалось найти канал ");
+                logger.error("Не удалось найти канал ");
                 event.reply("Не удалось найти канал").setEphemeral(true).queue();
             }
         } catch (Exception e) {
-            System.err.println("Exception caught: " + e.getMessage());
+            logger.error("Exception caught: " + e.getMessage());
             e.printStackTrace();
         }
         event.reply("Сообщение отправлено").setEphemeral(true).queue();
@@ -50,10 +54,10 @@ public class TicketSystemMessage extends ListenerAdapter {
                     .setComponents(ActionRow.of(Button.success("ticket", "\uD83D\uDCDD Связаться")))
                     .queue(success -> {
                         currentMessage = success;
-                        System.out.println("Сообщение отправлено успешно: " + success.getId());
+                        logger.info("Сообщение отправлено успешно: " + success.getId());
                         startUpdateTask(channel, guild); // Start updating task
                     }, error -> {
-                        System.err.println("Ошибка при отправке сообщения: " + error.getMessage());
+                        logger.error("Ошибка при отправке сообщения: " + error.getMessage());
                         error.printStackTrace();
                         if (event != null) {
                             event.reply("Ошибка при отправке сообщения: " + error.getMessage()).setEphemeral(true).queue();
@@ -63,9 +67,9 @@ public class TicketSystemMessage extends ListenerAdapter {
             // Update existing message
             currentMessage.editMessageEmbeds(embedBuilder.build())
                     .setComponents(ActionRow.of(Button.success("ticket", "\uD83D\uDCDD Связаться")))
-                    .queue(success -> System.out.println("Сообщение обновлено успешно: " + success.getId()),
+                    .queue(success -> logger.info("Сообщение обновлено успешно: " + success.getId()),
                             error -> {
-                                System.err.println("Ошибка при обновлении сообщения: " + error.getMessage());
+                                logger.error("Ошибка при обновлении сообщения: " + error.getMessage());
                                 error.printStackTrace();
                                 if (event != null) {
                                     event.reply("Ошибка при обновлении сообщения: " + error.getMessage()).setEphemeral(true).queue();
@@ -77,7 +81,7 @@ public class TicketSystemMessage extends ListenerAdapter {
     private static EmbedBuilder createEmbedBuilder(Guild guild) {
         Role psychologistRole = guild.getRoleById(Dotenv.load().get("psyhologRole"));
         if (psychologistRole == null) {
-            System.err.println("Роль психолога не найдена!");
+            logger.error("Роль психолога не найдена!");
             return new EmbedBuilder().setTitle("Ошибка").setDescription("Роль психолога не найдена").setColor(Color.RED);
         }
 

@@ -12,6 +12,9 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.Psyholog.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
@@ -22,15 +25,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class CreateTicket extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(CreateTicket.class);
 
     public static Map<String, String> userActiveTicketsMemory = new HashMap<>();
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    public static final String feedbackChannel = Dotenv.load().get("feedbackChannel");
-    public static final String adminChannel = Dotenv.load().get("adminChannel");
-    public static final String ticketCategory = Dotenv.load().get("ticketCategory");
-    public static final String psyhologRole = Dotenv.load().get("psyhologRole");
-    public static final String closeTicketCategory = Dotenv.load().get("closeTicketCategory");
-    public static final String voiceCategory = Dotenv.load().get("voiceCategory");
+    public static final String FEEDBACK_CHANNEL = Dotenv.load().get("feedbackChannel");
+    public static final String ADMIN_CHANNEL = Dotenv.load().get("adminChannel");
+    public static final String TICKET_CATEGORY = Dotenv.load().get("ticketCategory");
+    public static final String PSYCHOLOGY_ROLE = Dotenv.load().get("psyhologRole");
+    public static final String CLOSE_TICKET_CATEGORY = Dotenv.load().get("closeTicketCategory");
+    public static final String VOICE_CATEGORY = Dotenv.load().get("voiceCategory");
 
 
     public static void execute(ModalInteractionEvent event, String type, String age, String descriptionInput, String timeZone) {
@@ -40,7 +44,7 @@ public class CreateTicket extends ListenerAdapter {
             return;
         }
 
-        Category category = guild.getCategoryById(ticketCategory);
+        Category category = guild.getCategoryById(TICKET_CATEGORY);
         Member member = event.getMember();
 
         if (member == null) {
@@ -73,9 +77,9 @@ public class CreateTicket extends ListenerAdapter {
                     DataStorage.getInstance().getTicketDes().put(ticketNumber, descriptionInput);
                     DataStorage.getInstance().saveData(); // Save data to file
 
-                    TextChannel textChannelAdmin = guild.getTextChannelById(adminChannel);
+                    TextChannel textChannelAdmin = guild.getTextChannelById(ADMIN_CHANNEL);
 
-                    Role role = guild.getRoleById(psyhologRole);
+                    Role role = guild.getRoleById(PSYCHOLOGY_ROLE);
 
                     EmbedBuilder embedBuilder = new EmbedBuilder();
                     embedBuilder
@@ -109,7 +113,7 @@ public class CreateTicket extends ListenerAdapter {
                                                 .withEmoji(Emoji.fromUnicode("\uD83D\uDCE5") // Add ticket ID to the button ID
                                                 )).queue();
                     }
-                    System.out.println("Пользователь " + member.getEffectiveName() + " создал тикет!");
+                    logger.info("Пользователь " + member.getEffectiveName() + " создал тикет!");
                 });
     }
 }

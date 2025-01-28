@@ -5,7 +5,10 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.Ticket.CreateTicket;
 import org.Psyholog.Ticket.DataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +16,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TopPsyhologCommand extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(TopPsyhologCommand.class);
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("top")) {
@@ -46,6 +51,7 @@ public class TopPsyhologCommand extends ListenerAdapter {
 
                         try {
                             // Получаем участника напрямую через API
+                            assert guild != null;
                             Member psychologist = guild.retrieveMemberById(id).complete();
 
                             if (psychologist != null) {
@@ -62,7 +68,7 @@ public class TopPsyhologCommand extends ListenerAdapter {
                                 );
                             }
                         } catch (Exception e) {
-                            System.out.println("Ошибка при получении данных о психологе с ID " + id + ": " + e.getMessage());
+                            logger.error("Ошибка при получении данных о психологе с ID " + id + ": " + e.getMessage());
                             embedBuilder.addField(
                                     "Психолог не найден",
                                     String.format("ID: %s\nКоличество оценок: %d", id, reviewCount),
