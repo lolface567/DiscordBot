@@ -24,7 +24,6 @@ public class CheakBeforChanelDelete extends ListenerAdapter {
             DataStorage.getInstance().getTicketChannelMap().remove(textChannel);
             DataStorage.getInstance().getUserActiveTickets().remove(textChannel);
             DataStorage.getInstance().saveData();
-            logger.info("Тикет был успешно удален пкмом");
         }
         if (userActiveVoiceMapMemory.containsKey(textChannel)) {  // Если пкмом удалить войс созданый через меню
             String user = userActiveVoiceMapMemory.get(textChannel);

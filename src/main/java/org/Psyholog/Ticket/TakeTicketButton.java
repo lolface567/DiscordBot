@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.time.Instant;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class TakeTicketButton extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(TakeTicketButton.class);
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {   // Обработка кнопки взять тикет
         if (event.getButton().getId().startsWith("take-ticket:")) {
@@ -52,93 +55,104 @@ public class TakeTicketButton extends ListenerAdapter {
                 return;
             }
 
-            TextChannel textChannel = guild.getTextChannelById(ticketId);
-            Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
+            event.getGuild().retrieveMemberById(member.getId()).queue(updatedMember -> {
+                if (updatedMember.getRoles().stream().anyMatch(role -> role.getId().equals(CreateTicket.PSYCHOLOGY_ROLE))) {
+                    TextChannel textChannel = guild.getTextChannelById(ticketId);
+                    Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
 
-            if (user == null) {
-                event.editComponents(
-                        ActionRow.of(
-                                Button.danger("taken-ticket", "Тикет был закрыт, юзер не найден").asDisabled().withEmoji(Emoji.fromUnicode("❌")),
-                                Button.link(textChannel.getJumpUrl(), "Перейти к тикету")
-                        )
-                ).queue();
-                scheduler.schedule(() -> {
-                    event.getMessage().delete().queue();
-                }, 10, TimeUnit.MINUTES);
+                    if (user == null) {
+                        event.editComponents(
+                                ActionRow.of(
+                                        Button.danger("taken-ticket", "Тикет был закрыт, юзер не найден").asDisabled().withEmoji(Emoji.fromUnicode("❌")),
+                                        Button.link(textChannel.getJumpUrl(), "Перейти к тикету")
+                                )
+                        ).queue();
+                        scheduler.schedule(() -> {
+                            event.getMessage().delete().queue();
+                        }, 10, TimeUnit.MINUTES);
 
-                DataStorage.getInstance().getClosedTickets().add(ticketId);
-                DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
-                DataStorage.getInstance().getTicketDes().remove(ticketId);
-                DataStorage.getInstance().saveData();
+                        DataStorage.getInstance().getClosedTickets().add(ticketId);
+                        DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
+                        DataStorage.getInstance().getTicketDes().remove(ticketId);
+                        DataStorage.getInstance().saveData();
 
-                textChannel.delete().queue();
-                return;
-            }
+                        textChannel.delete().queue();
+                        return;
+                    }
 
-            if (textChannel != null) {
-                String newChannelName = ticketName + "-" + member.getEffectiveName();
-                textChannel.getManager().setName(newChannelName).queue(
-                        success -> {
-                            event.editComponents(
-                                    ActionRow.of(
-                                            Button.danger("taken-ticket", "Взял: " + member.getEffectiveName()).asDisabled()
-                                                    .withEmoji(Emoji.fromUnicode("✅")),
-                                            Button.link(textChannel.getJumpUrl(), "Перейти к тикету")
-                                    )
-                            ).queue();
+                    if (textChannel != null) {
+                        String newChannelName = ticketName + "-" + member.getEffectiveName();
+                        textChannel.getManager().setName(newChannelName).queue(
+                                success -> {
+                                    event.editComponents(
+                                            ActionRow.of(
+                                                    Button.danger("taken-ticket", "Взял: " + member.getEffectiveName()).asDisabled()
+                                                            .withEmoji(Emoji.fromUnicode("✅")),
+                                                    Button.link(textChannel.getJumpUrl(), "Перейти к тикету")
+                                            )
+                                    ).queue();
 
-                            scheduler.schedule(() -> {
-                                event.getMessage().delete().queue();
-                            }, 10, TimeUnit.MINUTES);
-                        },
-                        error -> event.reply("Ошибка при обновлении имени канала: " + error.getMessage()).setEphemeral(true).queue()
-                );
+                                    scheduler.schedule(() -> {
+                                        event.getMessage().delete().queue();
+                                    }, 10, TimeUnit.MINUTES);
+                                },
+                                error -> event.reply("Ошибка при обновлении имени канала: " + error.getMessage()).setEphemeral(true).queue()
+                        );
 
-                Role psychologistRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
-                if (psychologistRole == null) {
-                    event.reply("Ошибка: роль психолога не найдена.").setEphemeral(true).queue();
-                    return;
-                }
+                        Role psychologistRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
+                        if (psychologistRole == null) {
+                            event.reply("Ошибка: роль психолога не найдена.").setEphemeral(true).queue();
+                            return;
+                        }
 
-                DataStorage.getInstance().getTicketPsychologists().put(ticketNumber, member.getId());
-                DataStorage.getInstance().saveData();
+                        DataStorage.getInstance().getTicketPsychologists().put(ticketNumber, member.getId());
+                        DataStorage.getInstance().saveData();
 
-                // Получаем текущие разрешения для участника
-                PermissionOverride existingPermission = textChannel.getPermissionOverride(member);
+                        // Получаем текущие разрешения для участника
+                        PermissionOverride existingPermission = textChannel.getPermissionOverride(member);
 
-                if (existingPermission != null) {
-                    // Если разрешение уже существует, обновляем его
-                    existingPermission.getManager()
-                            .grant(EnumSet.of(Permission.VIEW_CHANNEL))
-                            .queue(
-                                    success -> logger.info("Права для участника успешно обновлены."),
-                                    error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
-                            );
+                        if (existingPermission != null) {
+                            // Если разрешение уже существует, обновляем его
+                            existingPermission.getManager()
+                                    .grant(EnumSet.of(Permission.VIEW_CHANNEL))
+                                    .queue(
+                                            success -> logger.info("Права для участника успешно обновлены."),
+                                            error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
+                                    );
+                        } else {
+                            // Если разрешение не существует, создаем новое
+                            textChannel.upsertPermissionOverride(member)
+                                    .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
+                                    .queue(
+                                            success -> logger.info("Права для участника успешно обновлены."),
+                                            error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
+                                    );
+                        }
+
+                        EmbedBuilder embedBuilder = new EmbedBuilder()
+                                .setColor(Color.DARK_GRAY)
+                                .setTitle("🎉 Психолог найден!")
+                                .setDescription("Ваш психолог: " + member.getAsMention())
+                                .addField("✨ Поддержка доступна", "Вы можете начать обсуждение.", false)
+                                .setFooter("Мы здесь, чтобы помочь вам!")
+                                .setTimestamp(Instant.now());
+                        System.out.println();
+                        List<Integer> ratings = DataStorage.getInstance().getPsychologistRatings().get(member.getId());
+                        if (ratings != null && !ratings.isEmpty()) {
+                            embedBuilder.setDescription("Ваш психолог: " + member.getAsMention() +
+                                    "\nЕго средний бал: " + DataStorage.getInstance().getAverageRating(member.getId()) +
+                                    "\nЕго количество оценок: " + DataStorage.getInstance().getPsychologistRatings().get(member.getId()).size());
+                        }
+                        textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+
+                        logger.info(member.getEffectiveName() + " взял тикет " + ticketId);
+                    } else {
+                        event.reply("Ошибка: канал не найден.").setEphemeral(true).queue();
+                    }
                 } else {
-                    // Если разрешение не существует, создаем новое
-                    textChannel.upsertPermissionOverride(member)
-                            .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
-                            .queue(
-                                    success -> logger.info("Права для участника успешно обновлены."),
-                                    error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
-                            );
+                    event.reply("У вас нету роли психолога!").setEphemeral(true).queue();
                 }
-
-                EmbedBuilder embedBuilder = new EmbedBuilder()
-                        .setColor(Color.DARK_GRAY)
-                        .setTitle("🎉 Психолог найден!")
-                        .setDescription("Ваш психолог: " + member.getAsMention() +
-                                "\nЕго средний бал: " + DataStorage.getInstance().getAverageRating(member.getId()) +
-                                "\nЕго количество оценок: " + DataStorage.getInstance().getPsychologistRatings().get(member.getId()).size())  //Тестить этот код
-                        .addField("✨ Поддержка доступна", "Вы можете начать обсуждение.", false)
-                        .setFooter("Мы здесь, чтобы помочь вам!")
-                        .setTimestamp(Instant.now());
-                textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
-
-                logger.info(member.getEffectiveName() + " взял тикет " + ticketId);
-            } else {
-                event.reply("Ошибка: канал не найден.").setEphemeral(true).queue();
-            }
+            });
         }
     }
 }

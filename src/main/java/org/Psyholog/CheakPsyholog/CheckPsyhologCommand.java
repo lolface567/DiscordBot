@@ -7,19 +7,30 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.Main;
 import org.Psyholog.Ticket.DataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 
 
 public class CheckPsyhologCommand extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(CheckPsyhologCommand.class);
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("rating")) {
             Guild guild = event.getGuild();
             // Получаем строку с ID психолога и убираем лишние символы
-            String psyholog = event.getOption("name").getAsString().replaceAll("[<@>]", "");
+            String psyholog = "";
+            if (event.getOption("name") != null) {
+                psyholog = event.getOption("name").getAsString().replaceAll("[<@>]", "");
+            } else {
+                event.reply("Нужно передать упонминание психолога!").setEphemeral(true).queue();
+                logger.info("Пользователь не передал параметры для команды");
+                return;
+            }
 
             assert guild != null;
             Member member = guild.getMemberById(psyholog);

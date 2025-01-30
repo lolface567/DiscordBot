@@ -60,11 +60,11 @@ public class Main {
                         new ClearCloseCommand(), new CheckPsyhologCommand(), new ClearDescriptionCommand(),
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
                         new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
-                        new ClearKickedPsyholog()
+                        new ClearKickedPsyholog(), new CahingRolle()
                 )
                 .build();
         logger.info("Bot Started!");
-        logger.info("Version 1.5.6");
+        logger.info("Version 1.5.7");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();
