@@ -4,13 +4,13 @@ import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.Psyholog.CheakPsyholog.CheckPsyhologCommand;
 import org.Psyholog.CheakPsyholog.TopPsyhologCommand;
 import org.Psyholog.DevCommands.*;
@@ -25,9 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.util.EnumSet;
-
-
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
@@ -36,23 +33,14 @@ public class Main {
         Dotenv dotenv = Dotenv.configure()
                 .load();
 
-        // Define the intents for the bot
-        EnumSet<GatewayIntent> intents = EnumSet.of(
-                GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.DIRECT_MESSAGES,
-                GatewayIntent.MESSAGE_CONTENT,
-                GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.DIRECT_MESSAGE_POLLS,
-                GatewayIntent.DIRECT_MESSAGE_TYPING,
-                GatewayIntent.GUILD_VOICE_STATES
-        );
-
         // Build the JDA instance
-        JDA jda = JDABuilder.createLight(dotenv.get("TOKEN"), intents)
-                .setActivity(Activity.listening("Ваши проблемы"))
-                .setMemberCachePolicy(MemberCachePolicy.ALL)
+        JDA jda = JDABuilder.createDefault(dotenv.get("TOKEN")) // Вместо createLight
+                .enableIntents(GatewayIntent.GUILD_VOICE_STATES) // Включаем голосовые события
+                .enableIntents(GatewayIntent.GUILD_MESSAGES)
+                .enableIntents(GatewayIntent.GUILD_MESSAGE_REACTIONS)
+                .enableIntents(GatewayIntent.GUILD_MEMBERS) // Кэшируем мемберов
+                .setMemberCachePolicy(MemberCachePolicy.ALL) // Полное кэширование участников
+                .enableCache(CacheFlag.VOICE_STATE) // Включаем кэширование голосовых каналов
                 .addEventListeners(
                         new CreateTicketSystemCommand(), new CreateAndSendTicket(), new CreateTicket(),
                         new MenuCommandEx(), new ClearOpenCommand(), new MenuButtons(),
@@ -64,7 +52,7 @@ public class Main {
                 )
                 .build();
         logger.info("Bot Started!");
-        logger.info("Version 1.5.7");
+        logger.info("Version 1.6.7");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();

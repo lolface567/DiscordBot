@@ -18,6 +18,7 @@ public class ClearDescriptionCommand extends ListenerAdapter {
                 event.reply("Ошибка: гильдия не найдена.").setEphemeral(true).queue();
                 return;
             }
+
             int bilo = DataStorage.getInstance().getTicketDes().size();
 
             DataStorage.getInstance().getTicketDes().clear();
@@ -26,7 +27,7 @@ public class ClearDescriptionCommand extends ListenerAdapter {
             int stalo = bilo - DataStorage.getInstance().getTicketDes().size();
 
             logger.info("Очистилось: " + stalo + " описаний");
-            event.reply("Описание почищеные (наверное)").setEphemeral(true).queue();
+            event.reply("Очистилось: " + stalo + " описаний").setEphemeral(true).queue();
         }
     }
 }

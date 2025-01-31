@@ -54,7 +54,6 @@ public class ClearKickedPsyholog extends ListenerAdapter {
 
                 if (psychologist == null || !psychologist.getRoles().contains(psychologistRole)) {
                     iterator.remove(); // Удаляем психолога из хранилища
-                    System.out.println("Выполнилась комманда");
                     DataStorage.getInstance().saveData();
                 }
             }
