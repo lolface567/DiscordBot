@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.Psyholog.Main;
 import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import java.util.Map;
 
 public class CheckPsyhologCommand extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CheckPsyhologCommand.class);
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("rating")) {
@@ -54,13 +54,15 @@ public class CheckPsyhologCommand extends ListenerAdapter {
                 Map<String, List<Integer>> psychologistRatings = DataStorage.getInstance().getPsychologistRatings();
                 List<Integer> ratings = psychologistRatings.get(member.getId());
                 int ratingCount = (ratings != null) ? ratings.size() : 0;
+                Integer closeTicketsCount = DataStorage.getInstance().getPsychologCloseCount(member.getId());
 
                 EmbedBuilder embed = new EmbedBuilder();
 
                 embed.setTitle("🎓 Средний балл психолога");
                 embed.setDescription("🔹 Психолог: **" + member.getEffectiveName() + "**\n"
                         + "📊 Средний балл: **" + averageRating + "**\n"
-                        + "📊 Количество оценок: **" + ratingCount + "**");
+                        + "\uD83D\uDDF3\uFE0F Количество оценок: **" + ratingCount + "**\n"
+                        + "\uD83D\uDD12 Количество закрытых тикетов: **" + closeTicketsCount + "**");
                 embed.setColor(0x00ADEF); // Устанавливаем цвет (например, синий)
                 embed.setThumbnail(member.getEffectiveAvatarUrl());
                 embed.build();

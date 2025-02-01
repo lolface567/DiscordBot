@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.Psyholog.Ticket.CreateTicket;
 import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,7 @@ public class TopPsyhologCommand extends ListenerAdapter {
 
             // Создаем эмбед-сообщение
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setTitle("Топ психологов");
+            embedBuilder.setTitle("🔹 Топ психологов");
             embedBuilder.setColor(0x00ADEF);
 
             sortedPsychologists.entrySet().stream()
@@ -47,6 +46,7 @@ public class TopPsyhologCommand extends ListenerAdapter {
                     .forEach(entry -> {
                         String id = entry.getKey();
                         Long reviewCount = entry.getValue();
+                        Integer closeTicketsCount = DataStorage.getInstance().getPsychologCloseCount(id);
                         Double averageRating = DataStorage.getInstance().getAverageRating(id); // Получаем средний рейтинг
 
                         try {
@@ -56,8 +56,8 @@ public class TopPsyhologCommand extends ListenerAdapter {
 
                             if (psychologist != null) {
                                 embedBuilder.addField(
-                                        psychologist.getEffectiveName(),
-                                        String.format("Средний рейтинг: %.2f\nКоличество оценок: %d", averageRating, reviewCount),
+                                        "⭐ " + psychologist.getEffectiveName(),
+                                        String.format("📊 Средний рейтинг: %.2f\n\uD83D\uDDF3\uFE0F Количество оценок: %d\n\uD83D\uDD12 Количество закрытых тикетов: %d", averageRating, reviewCount, closeTicketsCount),
                                         false
                                 );
                             } else {

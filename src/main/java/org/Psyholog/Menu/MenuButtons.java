@@ -87,6 +87,11 @@ public class MenuButtons extends ListenerAdapter {
                     // Точка, где тикет помечается закрытым:
                     DataStorage.getInstance().getClosedTickets().add(ticketId);
                     DataStorage.getInstance().getTicketDes().remove(ticketIdname);
+
+                    Map<String, Integer> map = DataStorage.getInstance().getPsyhologCloseMap();
+                    int newData = map.getOrDefault(member.getId(), 0) + 1; // Если ключа нет, берём 0, иначе текущее значение
+                    map.put(member.getId(), newData);
+
                     try {
                         CreateTicket.userActiveTicketsMemory.remove(user);
                     } catch (Exception e) {

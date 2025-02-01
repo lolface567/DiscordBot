@@ -91,8 +91,8 @@ public class VoiceInteract extends ListenerAdapter {
     }
 
     @Override
-    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
-        if (event.getComponentId().startsWith("kick-select:")) { // Проверяем, что это наш выбор кика
+    public void onStringSelectInteraction(StringSelectInteractionEvent event){
+        if (event.getComponentId().startsWith("kick-select:")) {
             String[] parts = event.getComponentId().split(":");
             String ownerId = parts[1]; // ID создателя комнаты
             String voiceId = parts[2]; // ID голосового канала
@@ -108,7 +108,7 @@ public class VoiceInteract extends ListenerAdapter {
 
             String selectedValue = event.getValues().get(0); // Получаем ID пользователя для кика
             String[] valueParts = selectedValue.split(":");
-            String targetId = valueParts[2]; // ID пользователя, которого нужно кикнуть
+            String targetId = valueParts[2]; // ID пользователя
 
             Member targetMember = guild.getMemberById(targetId);
             if (targetMember == null) {
@@ -122,7 +122,7 @@ public class VoiceInteract extends ListenerAdapter {
                 return;
             }
 
-            // Кикаем пользователя, перемещая его в пустоту (например, AFK-канал, если он есть)
+            // Кикаем пользователя, перемещая его в пустоту
             guild.kickVoiceMember(targetMember).queue(
                     success -> event.reply("✅ **" + targetMember.getEffectiveName() + "** был кикнут из голосового канала.").queue(),
                     failure -> event.reply("⚠️ Не удалось кикнуть пользователя: " + failure.getMessage()).setEphemeral(true).queue()
@@ -349,6 +349,4 @@ public class VoiceInteract extends ListenerAdapter {
             }
         }
     }
-
 }
-

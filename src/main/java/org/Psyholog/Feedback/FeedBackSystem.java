@@ -26,8 +26,8 @@ public class FeedBackSystem extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(FeedBackSystem.class);
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
-        if (event.getModalId().startsWith("feedback:")) { // Check for feedback modal with ticket ID
-            String ticketId = event.getModalId().split(":")[1]; // Extract ticket ID from modal ID
+        if (event.getModalId().startsWith("feedback:")) {
+            String ticketId = event.getModalId().split(":")[1];
             String memberId = event.getModalId().split(":")[2];
             String rating = event.getValue("steamId").getAsString();
             String feedbackText = event.getValue("body").getAsString();
@@ -50,7 +50,7 @@ public class FeedBackSystem extends ListenerAdapter {
                 return;
             }
 
-            Member psychologist = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketId));// Get psychologist for the ticket
+            Member psychologist = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketId));
             if (member.getId().equals(psychologist.getId())) {
                 event.reply("Ты психолог этого тикета").setEphemeral(true).queue();
                 return;
@@ -77,7 +77,7 @@ public class FeedBackSystem extends ListenerAdapter {
                     .addField(":star:Оценка", rating + " из 10", false) // Добавить информацию об оценке
                     .addField(":memo:Отзыв", feedbackText, false)
                     .addField(":busts_in_silhouette:Психолог", psychologist.getAsMention(), false) // Добавить имя психолога
-                    .setFooter("Ваш средний бал " + averageRating, psychologist.getUser().getAvatarUrl()) // Добавить футер с аватаром пользователя
+                    .setFooter("Ваш средний бал " + averageRating, psychologist.getUser().getAvatarUrl())
                     .setTimestamp(Instant.now());
             if (rating.equals("0") || rating.equals("1") || rating.equals("2") || rating.equals("3") || rating.equals("4") || rating.equals("5")) {
                 embedBuilder.setColor(Color.red);
@@ -87,7 +87,6 @@ public class FeedBackSystem extends ListenerAdapter {
             feedBackChannel.sendMessageEmbeds(embedBuilder.build()).queue();
             logger.info("Пользователь " + member.getEffectiveName() + " Оставил отзыв!");
 
-            // Update the feedback button to show that feedback has been submitted
             String channelId = DataStorage.getInstance().getTicketChannelMap().get(ticketId);
             if (channelId != null) {
                 TextChannel ticketChannel = guild.getTextChannelById(channelId);

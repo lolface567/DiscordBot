@@ -21,6 +21,7 @@ public class DataStorage {
 
     // Data variables
     private Map<String, String> ticketChannelMap = new HashMap<>();
+    private Map<String, Integer> psyhologCloseMap = new HashMap<>();
     private Set<String> closedTickets = new HashSet<>();
     private Map<String, String> ticketPsychologists = new HashMap<>();
     private Map<String, String> userActiveTickets = new HashMap<>();
@@ -55,6 +56,7 @@ public class DataStorage {
                 this.ticketCounter = data.getTicketCounter();
                 this.getTicketDes = data.getTicketDes() != null ? data.getTicketDes() : new HashMap<>();
                 this.psychologistRatings = data.getPsychologistRatings() != null ? data.getPsychologistRatings() : new HashMap<>();
+                this.psyhologCloseMap = data.getPsyhologCloseMap() != null ? data.getPsyhologCloseMap() : new HashMap<>();
             } catch (IOException e) {
                 logger.error("Не удалось загрузить данные тикетов: " + e.getMessage());
                 e.printStackTrace();
@@ -66,6 +68,7 @@ public class DataStorage {
                 this.getTicketDes = new HashMap<>();
                 this.psychologistRatings = new HashMap<>();
                 this.ticketCounter = 0;
+                this.psyhologCloseMap = new HashMap<>();
             }
         }
     }
@@ -78,7 +81,7 @@ public class DataStorage {
             file.getAbsoluteFile().getParentFile().mkdirs(); // Создаем директории, если они не существуют
             DataWrapper data = new DataWrapper(this.ticketChannelMap, this.closedTickets,
                     this.ticketPsychologists, this.userActiveTickets,
-                    this.getTicketDes, this.psychologistRatings, this.ticketCounter);
+                    this.getTicketDes, this.psychologistRatings, this.ticketCounter, this.psyhologCloseMap);
             objectMapper.writeValue(file, data);
             logger.info("Данные успешно сохранены в " + DATA_FILE_PATH);
         } catch (IOException e) {
@@ -93,7 +96,7 @@ public class DataStorage {
         saveData(); // Сохраняем изменения в базе
     }
 
-    // Method to calculate the average rating of a psychologist
+    // Метод для вычисления среднего числа
     public double getAverageRating(String psychologistId) {
         List<Integer> ratings = psychologistRatings.get(psychologistId);
         if (ratings == null || ratings.isEmpty()) {
@@ -102,9 +105,16 @@ public class DataStorage {
         return ratings.stream().mapToInt(Integer::intValue).average().orElse(0.0);
     }
 
-    // Getter methods
+    public int getPsychologCloseCount(String id){
+        Map<String, Integer> map = DataStorage.getInstance().getPsyhologCloseMap();
+        return map.getOrDefault(id, 0);
+    }
+
     public Map<String, String> getTicketChannelMap() {
         return ticketChannelMap;
+    }
+    public Map<String, Integer> getPsyhologCloseMap() {
+        return psyhologCloseMap;
     }
 
     public Map<String, String> getUserActiveTickets() {
@@ -143,15 +153,18 @@ class DataWrapper {
     private Map<String, String> ticketPsychologists;
     private Map<String, String> userActiveTickets;
     private Map<String, String> getTicketDes;
+    private Map<String, Integer> psyhologCloseMap;
     private Map<String, List<Integer>> psychologistRatings; // Новое поле для хранения оценок
     private int ticketCounter;
+
 
     // Default constructor for Jackson
     public DataWrapper() {}
 
     public DataWrapper(Map<String, String> ticketChannelMap, Set<String> closedTickets,
                        Map<String, String> ticketPsychologists, Map<String, String> userActiveTickets,
-                       Map<String, String> getTicketDes, Map<String, List<Integer>> psychologistRatings, int ticketCounter) {
+                       Map<String, String> getTicketDes, Map<String, List<Integer>> psychologistRatings, int ticketCounter,
+                       Map<String, Integer> psyhologCloseMap) {
         this.ticketChannelMap = ticketChannelMap;
         this.closedTickets = closedTickets;
         this.ticketPsychologists = ticketPsychologists;
@@ -159,6 +172,7 @@ class DataWrapper {
         this.getTicketDes = getTicketDes;
         this.psychologistRatings = psychologistRatings;
         this.ticketCounter = ticketCounter;
+        this.psyhologCloseMap = psyhologCloseMap;
     }
 
     public Map<String, String> getTicketChannelMap() { return ticketChannelMap; }
@@ -190,4 +204,6 @@ class DataWrapper {
     public int getTicketCounter() {
         return ticketCounter;
     }
+
+    public Map<String, Integer> getPsyhologCloseMap(){ return psyhologCloseMap; }
 }

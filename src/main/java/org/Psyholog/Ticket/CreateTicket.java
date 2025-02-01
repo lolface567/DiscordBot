@@ -110,7 +110,7 @@ public class CreateTicket extends ListenerAdapter {
                                 .setEmbeds(embedBuilder.build())
                                 .setActionRow(
                                         Button.success("take-ticket:" + ticketNumber + ":" + ticketName, "Взять тикет")
-                                                .withEmoji(Emoji.fromUnicode("\uD83D\uDCE5") // Add ticket ID to the button ID
+                                                .withEmoji(Emoji.fromUnicode("\uD83D\uDCE5")
                                                 )).queue();
                     }
                     logger.info("Пользователь " + member.getEffectiveName() + " создал тикет!");
