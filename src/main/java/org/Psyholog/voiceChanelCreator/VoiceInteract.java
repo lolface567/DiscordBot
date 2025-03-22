@@ -4,8 +4,10 @@ import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
+import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -41,39 +43,42 @@ public class VoiceInteract extends ListenerAdapter {
         Guild guild = event.getGuild();
         Member member = event.getMember();
 
-        if (event.getChannelJoined() != null && event.getChannelLeft() == null) {
-            VoiceChannel joinedChannel = event.getChannelJoined().asVoiceChannel();
+        if (event.getChannelJoined() != null) {
+            AudioChannel joinedChannel = event.getChannelJoined(); // AudioChannel - общий тип для VoiceChannel и StageChannel
 
-            if (joinedChannel.getId().equals(voiceChannelId)) {
+            if (joinedChannel instanceof VoiceChannel) { // Проверяем, является ли это голосовым каналом
+                VoiceChannel voiceChannel = (VoiceChannel) joinedChannel;
 
-                guild.createVoiceChannel("Приват " + member.getEffectiveName())
-                        .setParent(guild.getCategoryById(categoryVoiceId))
-                        .setUserlimit(2)
-                        .queue(voiceChannel -> {
-                            guild.moveVoiceMember(member, voiceChannel).queue();
-                            activeVoices.put(voiceChannel.getId(), member.getId());
+                if (voiceChannel.getId().equals(voiceChannelId)) {
+                    guild.createVoiceChannel("Приват " + member.getEffectiveName())
+                            .setParent(guild.getCategoryById(categoryVoiceId))
+                            .setUserlimit(2)
+                            .queue(voiceChannel1 -> {
+                                guild.moveVoiceMember(member, voiceChannel1).queue();
+                                activeVoices.put(voiceChannel1.getId(), member.getId());
 
-                            // Отправка сообщения в системный текстовый канал
-                            VoiceChannel textChannel = guild.getVoiceChannelById(voiceChannel.getId());
-                            if (textChannel != null) {
-                                EmbedBuilder embedBuilder = new EmbedBuilder()
-                                        .setTitle("🎧 Ваш личный голосовой канал!")
-                                        .setColor(new Color(72, 133, 237)) // Красивый синий оттенок
-                                        .setDescription("Используйте кнопки ниже для управления вашим каналом. Вы можете изменить его название, установить лимит пользователей или кикнуть участника.")
-                                        .setFooter("👑 Создатель: " + member.getEffectiveName(), null)
-                                        .setTimestamp(Instant.now());
+                                // Отправка сообщения в системный текстовый канал
+                                VoiceChannel textChannel = guild.getVoiceChannelById(voiceChannel1.getId());
+                                if (textChannel != null) {
+                                    EmbedBuilder embedBuilder = new EmbedBuilder()
+                                            .setTitle("🎧 Ваш личный голосовой канал!")
+                                            .setColor(new Color(72, 133, 237)) // Красивый синий оттенок
+                                            .setDescription("Используйте кнопки ниже для управления вашим каналом. Вы можете изменить его название, установить лимит пользователей или кикнуть участника.")
+                                            .setFooter("👑 Создатель: " + member.getEffectiveName(), null)
+                                            .setTimestamp(Instant.now());
 
-                                textChannel.sendMessage(member.getAsMention() + ", ваш приватный канал создан! 🔥")
-                                        .setEmbeds(embedBuilder.build())
-                                        .addActionRow(
-                                                Button.primary("name:" + member.getId() + ":" + voiceChannel.getId(), "✏ Изменить имя"),
-                                                Button.primary("limit:" + member.getId() + ":" + voiceChannel.getId(), "📏 Установить лимит"),
-                                                Button.danger("kick:" + member.getId() + ":" + voiceChannel.getId(), "⛔ Кикнуть участника"),
-                                                Button.primary("closeVoice:" + member.getId() + ":" + voiceChannel.getId(), "🔒 Закрыть канал")
-                                        )
-                                        .queue();
-                            }
-                        });
+                                    textChannel.sendMessage(member.getAsMention() + ", ваш приватный канал создан! 🔥")
+                                            .setEmbeds(embedBuilder.build())
+                                            .addActionRow(
+                                                    Button.primary("name:" + member.getId() + ":" + voiceChannel1.getId(), "✏ Изменить имя"),
+                                                    Button.primary("limit:" + member.getId() + ":" + voiceChannel1.getId(), "📏 Установить лимит"),
+                                                    Button.danger("kick:" + member.getId() + ":" + voiceChannel1.getId(), "⛔ Кикнуть участника"),
+                                                    Button.primary("closeVoice:" + member.getId() + ":" + voiceChannel1.getId(), "🔒 Закрыть канал")
+                                            )
+                                            .queue();
+                                }
+                            });
+                }
             }
         }
 
@@ -91,7 +96,7 @@ public class VoiceInteract extends ListenerAdapter {
     }
 
     @Override
-    public void onStringSelectInteraction(StringSelectInteractionEvent event){
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         if (event.getComponentId().startsWith("kick-select:")) {
             String[] parts = event.getComponentId().split(":");
             String ownerId = parts[1]; // ID создателя комнаты
@@ -260,7 +265,7 @@ public class VoiceInteract extends ListenerAdapter {
             Member member = event.getMember();
 
             assert member != null;
-            if(member.getId().equals(memberId)){
+            if (member.getId().equals(memberId)) {
                 TextInput DescriptionInput = TextInput.create("voiceName", "Введите новое имя для канала", TextInputStyle.SHORT)
                         .setPlaceholder("Введите название...")
                         .setMinLength(1)
@@ -270,18 +275,18 @@ public class VoiceInteract extends ListenerAdapter {
                         .addComponents(ActionRow.of(DescriptionInput))
                         .build();
                 event.replyModal(voiceNameGive).queue();
-            }else {
+            } else {
                 event.reply("❌ Только создатель голосового канала может менять его название.").setEphemeral(true).queue();
             }
         }
-        if (event.getButton().getId().startsWith("limit:")){
+        if (event.getButton().getId().startsWith("limit:")) {
             String[] parts = event.getButton().getId().split(":");
             String memberId = parts[1]; // Извлекаем ID тикета из имени
             String voiceId = parts[2]; // Извлекаем айди канала
             Member member = event.getMember();
 
             assert member != null;
-            if(member.getId().equals(memberId)){
+            if (member.getId().equals(memberId)) {
                 TextInput DescriptionInput = TextInput.create("voiceLimit", "Укажите лимит пользователей", TextInputStyle.SHORT)
                         .setPlaceholder("Введите число")
                         .setMinLength(1)
@@ -291,7 +296,7 @@ public class VoiceInteract extends ListenerAdapter {
                         .addComponents(ActionRow.of(DescriptionInput))
                         .build();
                 event.replyModal(voiceLimitGive).queue();
-            }else {
+            } else {
                 event.reply("❌ Только создатель голосового канала может менять лимит.").setEphemeral(true).queue();
             }
         }
@@ -314,7 +319,7 @@ public class VoiceInteract extends ListenerAdapter {
 
             try {
                 range = Integer.parseInt(type2);
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("Что то не так");
                 voiceChannel.getManager().setUserLimit(2).queue(
                         success -> event.reply("❌ Некорректный ввод. Лимит установлен на " + 2).setEphemeral(true).queue(),
@@ -324,6 +329,12 @@ public class VoiceInteract extends ListenerAdapter {
             }
 
             int finalRange = range;
+
+            if (finalRange > 99) {
+                event.reply("Вы не можете установить лимит пользователей больше 99").setEphemeral(true).queue();
+                return;
+            }
+
             voiceChannel.getManager().setUserLimit(range).queue(
                     success -> event.reply("✅ Лимит пользователей изменён на " + finalRange).setEphemeral(true).queue(),
                     error -> event.reply("❌ Не удалось изменить лимит: " + error.getMessage()).setEphemeral(true).queue()

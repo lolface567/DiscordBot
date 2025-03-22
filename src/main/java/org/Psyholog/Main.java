@@ -37,6 +37,7 @@ public class Main {
         JDA jda = JDABuilder.createDefault(dotenv.get("TOKEN")) // Вместо createLight
                 .enableIntents(GatewayIntent.GUILD_VOICE_STATES) // Включаем голосовые события
                 .enableIntents(GatewayIntent.GUILD_MESSAGES)
+                .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .enableIntents(GatewayIntent.GUILD_MESSAGE_REACTIONS)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS) // Кэшируем мемберов
                 .setMemberCachePolicy(MemberCachePolicy.ALL) // Полное кэширование участников
@@ -48,11 +49,11 @@ public class Main {
                         new ClearCloseCommand(), new CheckPsyhologCommand(), new ClearDescriptionCommand(),
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
                         new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
-                        new ClearKickedPsyholog(), new CahingRolle()
+                        new ClearKickedPsyholog(), new CahingRolle(), new LogsSender()
                 )
                 .build();
         logger.info("Bot Started!");
-        logger.info("Version 1.6.7");
+        logger.info("Version 1.7.8");
 
         // Add slash commands
         CommandListUpdateAction commands = jda.updateCommands();
