@@ -114,7 +114,7 @@ public class TakeTicketButton extends ListenerAdapter {
                         if (existingPermission != null) {
                             // Если разрешение уже существует, обновляем его
                             existingPermission.getManager()
-                                    .grant(EnumSet.of(Permission.VIEW_CHANNEL))
+                                    .grant(EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_MANAGE))
                                     .queue(
                                             success -> logger.info("Права для участника успешно обновлены."),
                                             error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())
@@ -122,7 +122,7 @@ public class TakeTicketButton extends ListenerAdapter {
                         } else {
                             // Если разрешение не существует, создаем новое
                             textChannel.upsertPermissionOverride(member)
-                                    .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL))
+                                    .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_MANAGE))
                                     .queue(
                                             success -> logger.info("Права для участника успешно обновлены."),
                                             error -> logger.error("Ошибка при обновлении прав для участника: " + error.getMessage())

@@ -1,5 +1,6 @@
 package org.Psyholog.Menu;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -25,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.Psyholog.Ticket.CreateTicket.*;
@@ -149,6 +152,18 @@ public class MenuButtons extends ListenerAdapter {
                         .setFooter("Закрыто", member.getUser().getAvatarUrl()) // Добавляем аватар пользователя в футер
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder1.build()).queue();
+
+                // Получаем текущую дату и время
+                LocalDateTime now = LocalDateTime.now();
+
+                // Форматируем дату в нормальный вид
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+                String formattedDateTime = now.format(formatter);
+
+                TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("logsChannel"));
+                logsTextChannel.sendMessage("`" + formattedDateTime + " Тикет: " + ticketIdname +
+                        " Был закрыт психологом: " + member.getEffectiveName() + " (" + member.getId() + ")`" +
+                        "\n`----------------------------------------------------------------`").queue();
 
                 EmbedBuilder embedBuilder2 = new EmbedBuilder()
                         .setColor(Color.GREEN)
