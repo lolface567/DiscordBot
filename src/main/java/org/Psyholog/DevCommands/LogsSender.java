@@ -9,6 +9,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.Psyholog.Ticket.DataStorage;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -17,27 +20,57 @@ public class LogsSender extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         Guild guild = event.getGuild();
-        TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("logsChannel"));
         TextChannel textChannelEvent = event.getChannel().asTextChannel();
-        Role psyhologRole = guild.getRoleById(Dotenv.load().get("psyhologRole"));
         String targetTextChannelId = getKeyByValue(DataStorage.getInstance().getTicketChannelMap(), textChannelEvent.getId());
-        if (targetTextChannelId != null) {
-            if (event.getMember().getRoles().contains(psyhologRole)) {
-                // Получаем текущую дату и время
-                LocalDateTime now = LocalDateTime.now();
+        if (!DataStorage.getInstance().getClosedTickets().contains(textChannelEvent.getId())) {
+            if (!event.getMember().getUser().isBot()) {
+                if (targetTextChannelId != null) {
+                    // Получаем текущую дату и время
+                    LocalDateTime now = LocalDateTime.now();
 
-                // Форматируем дату в нормальный вид
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-                String formattedDateTime = now.format(formatter);
-                Member psyholog = event.getMember();
-                String message = event.getMessage().getContentRaw().toString();
-                String ticketDesc = DataStorage.getInstance().getTicketDes().get(targetTextChannelId);
-                logsTextChannel.sendMessage(  "`Номер тикета: " + targetTextChannelId + "`" + "\n" + "`Описание тикета: " + ticketDesc + "`" +
-                        "\n\n" + "`" + formattedDateTime + " " + psyholog.getEffectiveName() + " (" + psyholog.getId() + "):` " + message
-                        + "\n`----------------------------------------------------------------`").queue();
+                    // Форматируем дату в нормальный вид
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+                    String formattedDateTime = now.format(formatter);
+
+                    Member member = event.getMember();
+
+                    String message = event.getMessage().getContentRaw().toString();
+                    String ticketDesc = DataStorage.getInstance().getTicketDes().get(targetTextChannelId);
+
+                    File logDir = new File("logs");
+                    if (!logDir.exists()) {
+                        logDir.mkdirs(); // Создает папку, если её нет
+                    }
+                    File logs = new File(logDir, targetTextChannelId + ".txt");
+                    boolean isNewFile = false;
+
+                    // Проверяем, есть ли уже файл
+                    if (!logs.exists()) {
+                        try {
+                            isNewFile = logs.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+
+                    try (FileWriter writer = new FileWriter(logs, true)) {
+                        if (isNewFile) {
+                            Member psyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(targetTextChannelId));
+                            writer.write("==============================================================" +
+                                    "\nНомер тикета: " + targetTextChannelId +
+                                    "\nПсихолог тикета: " + psyholog.getEffectiveName() + " (" + psyholog.getId() + ") " +
+                                    "\nОписание тикета: " + ticketDesc +
+                                    "\n==============================================================");
+                        }
+                        writer.write("\n" + formattedDateTime + " - " + member.getEffectiveName() + " (" + member.getId() + ") - " + message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                return;
             }
-        } else {
-            return;
         }
     }
 

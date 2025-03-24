@@ -25,7 +25,6 @@ public class MenuCommandEx extends ListenerAdapter {
                 assert member != null;
                 if (member.getRoles().contains(role)) {
                     MenuSystem.execute(event);
-                    System.out.println("Меню вызвал " + member.getEffectiveName());
                 } else {
                     event.reply("У вас нет роли психолога").setEphemeral(true).queue();
                 }

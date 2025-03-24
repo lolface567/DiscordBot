@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.io.File;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -153,17 +154,27 @@ public class MenuButtons extends ListenerAdapter {
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder1.build()).queue();
 
-                // Получаем текущую дату и время
-                LocalDateTime now = LocalDateTime.now();
-
-                // Форматируем дату в нормальный вид
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-                String formattedDateTime = now.format(formatter);
-
                 TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("logsChannel"));
-                logsTextChannel.sendMessage("`" + formattedDateTime + " Тикет: " + ticketIdname +
-                        " Был закрыт психологом: " + member.getEffectiveName() + " (" + member.getId() + ")`" +
-                        "\n`----------------------------------------------------------------`").queue();
+                if (logsTextChannel == null) {
+                    System.out.println("Ошибка: Канал не найден!");
+                    return;
+                }
+
+                File logFile = new File("logs", ticketIdname + ".txt");
+                if (!logFile.exists()) {
+                    System.out.println("Ошибка: Файл лога не найден!");
+                    return;
+                }
+
+                logsTextChannel.sendFiles(net.dv8tion.jda.api.utils.FileUpload.fromData(logFile)).queue(success -> {
+                    if (logFile.delete()) {
+                        logger.info("Файл успешно удален: " + logFile.getName());
+                    } else {
+                        logger.error("Ошибка удаления файла: " + logFile.getName());
+                    }
+                }, failure -> {
+                    logger.error("Ошибка отправки файла: " + failure.getMessage());
+                });
 
                 EmbedBuilder embedBuilder2 = new EmbedBuilder()
                         .setColor(Color.GREEN)
