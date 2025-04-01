@@ -16,7 +16,7 @@ public class MenuCommandEx extends ListenerAdapter {
         Guild guild = event.getGuild();
         Member member = event.getMember();
         TextChannel textChannel = event.getChannel().asTextChannel();
-        boolean curentText = DataStorage.getInstance().getTicketChannelMap().containsValue(textChannel.getId());
+        boolean curentText = DataStorage.getInstance().isTextChannelExists(textChannel.getId());
         assert guild != null;
         Role role = guild.getRoleById(Dotenv.load().get("psyhologRole"));
 

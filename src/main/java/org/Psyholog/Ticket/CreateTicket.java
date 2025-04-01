@@ -62,20 +62,16 @@ public class CreateTicket extends ListenerAdapter {
             return;
         }
 
-        DataStorage.getInstance().incrementTicketCounter();
-        String ticketNumber = String.valueOf(DataStorage.getInstance().getTicketCounter());
+        String ticketNumber = String.valueOf(DataStorage.getInstance().getNextTicketNumber());
         String ticketName = "ticket-" + ticketNumber;
-        DataStorage.getInstance().saveData();
 
         guild.createTextChannel(ticketName, category)
                 .addPermissionOverride(member, EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .queue(textChannel -> {
-                    DataStorage.getInstance().getTicketChannelMap().put(ticketNumber, textChannel.getId());
-                    DataStorage.getInstance().getUserActiveTickets().put(textChannel.getId(), member.getId()); // Mark this ticket as active for the user
+
                     userActiveTicketsMemory.put(member.getId(), textChannel.getId()); // добавляет юзера в бан лист
-                    DataStorage.getInstance().getTicketDes().put(ticketNumber, descriptionInput);
-                    DataStorage.getInstance().saveData(); // Save data to file
+                    DataStorage.getInstance().addTicket(Integer.parseInt(ticketNumber), member.getId(), textChannel.getId(), descriptionInput);
 
                     TextChannel textChannelAdmin = guild.getTextChannelById(ADMIN_CHANNEL);
 
@@ -88,7 +84,7 @@ public class CreateTicket extends ListenerAdapter {
                             .setDescription("Поступило новое обращение. Подробности ниже:")
                             .addField("📂 Тип:", type, false)
                             .addField("🎂 Возраст:", age, false)
-                            .addField("📝 Описание проблемы:", DataStorage.getInstance().getTicketDes().get(ticketNumber), false)
+                            .addField("📝 Описание проблемы:", DataStorage.getInstance().getTicketDescription(Integer.parseInt(ticketNumber)), false)
                             .addField("\uD83D\uDD5D Часовой пояс:", timeZone, false)
                             .addField("📄 Ticket ID", ticketName, false)
                             .setFooter("Сообщение от " + member.getEffectiveName(), member.getUser().getAvatarUrl())

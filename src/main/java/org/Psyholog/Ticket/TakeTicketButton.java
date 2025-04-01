@@ -35,7 +35,7 @@ public class TakeTicketButton extends ListenerAdapter {
             String[] parts = event.getButton().getId().split(":");
             String ticketNumber = parts[1];
             String ticketName = parts[2];
-            String ticketId = DataStorage.getInstance().getTicketChannelMap().get(ticketNumber);
+            String ticketId = DataStorage.getInstance().getTicketId(Integer.parseInt(ticketNumber));
 
 
             Guild guild = event.getGuild();
@@ -44,7 +44,7 @@ public class TakeTicketButton extends ListenerAdapter {
                 return;
             }
 
-            if (DataStorage.getInstance().getClosedTickets().contains(ticketId)) {
+            if (DataStorage.getInstance().getTicketStatus(ticketId).equals("closed")) {
                 event.reply("Ошибка: тикет уже закрыт").setEphemeral(true).queue();
                 return;
             }
@@ -58,7 +58,7 @@ public class TakeTicketButton extends ListenerAdapter {
             event.getGuild().retrieveMemberById(member.getId()).queue(updatedMember -> {
                 if (updatedMember.getRoles().stream().anyMatch(role -> role.getId().equals(CreateTicket.PSYCHOLOGY_ROLE))) {
                     TextChannel textChannel = guild.getTextChannelById(ticketId);
-                    Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
+                    Member user = guild.getMemberById(DataStorage.getInstance().getUser(ticketId));
 
                     if (user == null) {
                         event.editComponents(
@@ -71,10 +71,7 @@ public class TakeTicketButton extends ListenerAdapter {
                             event.getMessage().delete().queue();
                         }, 10, TimeUnit.MINUTES);
 
-                        DataStorage.getInstance().getClosedTickets().add(ticketId);
-                        DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
-                        DataStorage.getInstance().getTicketDes().remove(ticketId);
-                        DataStorage.getInstance().saveData();
+                        DataStorage.getInstance().closeTicket(ticketId);
 
                         textChannel.delete().queue();
                         return;
@@ -105,8 +102,7 @@ public class TakeTicketButton extends ListenerAdapter {
                             return;
                         }
 
-                        DataStorage.getInstance().getTicketPsychologists().put(ticketNumber, member.getId());
-                        DataStorage.getInstance().saveData();
+                        DataStorage.getInstance().assignPsychologist(Integer.parseInt(ticketNumber), member.getId());
 
                         // Получаем текущие разрешения для участника
                         PermissionOverride existingPermission = textChannel.getPermissionOverride(member);
@@ -136,13 +132,16 @@ public class TakeTicketButton extends ListenerAdapter {
                                 .addField("✨ Поддержка доступна", "Вы можете начать обсуждение.", false)
                                 .setFooter("Мы здесь, чтобы помочь вам!")
                                 .setTimestamp(Instant.now());
-                        System.out.println();
-                        List<Integer> ratings = DataStorage.getInstance().getPsychologistRatings().get(member.getId());
-                        if (ratings != null && !ratings.isEmpty()) {
+
+                        Double rating = DataStorage.getInstance().getAverageRating(member.getId());
+                        Integer countOfRatings = DataStorage.getInstance().getCountOfRatings(member.getId());
+
+                        if (rating != null && countOfRatings != null) {
                             embedBuilder.setDescription("Ваш психолог: " + member.getAsMention() +
-                                    "\nЕго средний бал: " + DataStorage.getInstance().getAverageRating(member.getId()) +
-                                    "\nЕго количество оценок: " + DataStorage.getInstance().getPsychologistRatings().get(member.getId()).size());
+                                    "\nЕго средний бал: " + rating +
+                                    "\nЕго количество оценок: " + countOfRatings);
                         }
+
                         textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
 
                         logger.info(member.getEffectiveName() + " взял тикет " + ticketId);

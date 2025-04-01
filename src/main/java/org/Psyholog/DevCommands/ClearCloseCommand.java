@@ -17,7 +17,7 @@ public class ClearCloseCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if ("clear-closed-tickets".equals(event.getName())) {
-            List<String> ticketList = new ArrayList<>(DataStorage.getInstance().getClosedTickets());
+            List<String> ticketList = new ArrayList<>(DataStorage.getInstance().getClosedTicketsList());
             Guild guild = event.getGuild();
 
             if (guild == null) {

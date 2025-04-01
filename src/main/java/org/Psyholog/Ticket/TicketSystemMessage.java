@@ -99,10 +99,10 @@ public class TicketSystemMessage extends ListenerAdapter {
                         "\n" +
                         "\uD83D\uDEAB **ПРЕДУПРЕЖДЕНИЕ:** За создание обращений, содержащих троллинг, Вы гарантированно получите роль @\uD83D\uDEAB, с которой Вы навсегда потеряете доступ к созданию обращений.\n" +
                         "\n" +
-                        "─ \uD83D\uDCC3 **Обращений открыто:** " + "**" + DataStorage.getInstance().getUserActiveTickets().size() + "**" +
+                        "─ \uD83D\uDCC3 **Обращений открыто:** " + "**" + DataStorage.getInstance().countOpenTickets() + "**" +
                         "\n" +
                         "\n" +
-                        "─ \uD83D\uDCC4 **Обратилось за все время:** " + "**" + DataStorage.getInstance().getTicketCounter() + "**" +
+                        "─ \uD83D\uDCC4 **Обратилось за все время:** " + "**" + DataStorage.getInstance().ticket_counters() + "**" +
                         "\n" +
                         "\n" +
                         "─ \uD83D\uDE4D\u200D♂\uFE0F **Психологов онлайн:** " + "**" + onlinePsychologists + "**" +

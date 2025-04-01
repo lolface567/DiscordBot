@@ -21,12 +21,12 @@ public class LogsSender extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         Guild guild = event.getGuild();
         TextChannel textChannelEvent = event.getChannel().asTextChannel();
-        String targetTextChannelId = getKeyByValue(DataStorage.getInstance().getTicketChannelMap(), textChannelEvent.getId());
-        if (!DataStorage.getInstance().getClosedTickets().contains(textChannelEvent.getId())) {
+        if (DataStorage.getInstance().isTextChannelExists(textChannelEvent.getId())) {
             if (!event.getMember().getUser().isBot()) {
-                if (targetTextChannelId != null) {
+                if (textChannelEvent != null) {
                     // Получаем текущую дату и время
                     LocalDateTime now = LocalDateTime.now();
+                    String IdName = DataStorage.getInstance().getTicketIdName(textChannelEvent.getId());
 
                     // Форматируем дату в нормальный вид
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
@@ -35,13 +35,13 @@ public class LogsSender extends ListenerAdapter {
                     Member member = event.getMember();
 
                     String message = event.getMessage().getContentRaw().toString();
-                    String ticketDesc = DataStorage.getInstance().getTicketDes().get(targetTextChannelId);
+                    String ticketDesc = DataStorage.getInstance().getTicketDescription(Integer.parseInt(IdName));
 
                     File logDir = new File("logs");
                     if (!logDir.exists()) {
                         logDir.mkdirs(); // Создает папку, если её нет
                     }
-                    File logs = new File(logDir, targetTextChannelId + ".txt");
+                    File logs = new File(logDir, IdName + ".txt");
                     boolean isNewFile = false;
 
                     // Проверяем, есть ли уже файл
@@ -56,9 +56,9 @@ public class LogsSender extends ListenerAdapter {
 
                     try (FileWriter writer = new FileWriter(logs, true)) {
                         if (isNewFile) {
-                            Member psyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(targetTextChannelId));
+                            Member psyholog = guild.getMemberById(DataStorage.getInstance().getPsychologist(Integer.parseInt(IdName)));
                             writer.write("==============================================================" +
-                                    "\nНомер тикета: " + targetTextChannelId +
+                                    "\nНомер тикета: " + IdName +
                                     "\nПсихолог тикета: " + psyholog.getEffectiveName() + " (" + psyholog.getId() + ") " +
                                     "\nОписание тикета: " + ticketDesc +
                                     "\n==============================================================");

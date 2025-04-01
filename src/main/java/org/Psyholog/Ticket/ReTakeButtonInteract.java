@@ -40,11 +40,12 @@ public class ReTakeButtonInteract extends ListenerAdapter {
             }
 
             Role psyhologRole = guild.getRoleById(CreateTicket.PSYCHOLOGY_ROLE);
-            Member pshyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketIdName));
+            Member pshyholog = guild.getMemberById(DataStorage.getInstance().getPsychologist(Integer.parseInt(ticketIdName)));
             if(pshyholog == null){
                 event.reply("Ошибка: психолог не найден.").setEphemeral(true).queue();
                 return;
             }
+
             System.out.println(pshyholog);
             if(psyhologRole == null){
                 event.reply("Ошибка: роль психолога не найдена.").setEphemeral(true).queue();
@@ -75,10 +76,7 @@ public class ReTakeButtonInteract extends ListenerAdapter {
                                         .queue(success -> logger.info("Права успешно сняты."),
                                                 error -> logger.error("Ошибка при установке прав: " + error.getMessage()));
 
-                DataStorage.getInstance().getTicketPsychologists().remove(ticketIdName);
-                DataStorage.getInstance().saveData(); // Сохраняем данные в файл
-                DataStorage.getInstance().getTicketPsychologists().put(ticketIdName, member.getId());
-                DataStorage.getInstance().saveData(); // Сохраняем данные в файл
+                DataStorage.getInstance().assignPsychologist(Integer.parseInt(ticketIdName), member.getId());
 
                 mainChanel.upsertPermissionOverride(member)
                         .setAllowed(EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND))

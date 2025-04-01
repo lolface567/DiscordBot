@@ -60,7 +60,7 @@ public class ReTakeTicketOnModal extends ListenerAdapter {
                         .addField("👤 Сообщение от", member.getAsMention(), false)
                         .addField("📄 Описание от психолога", event.getValue("why").getAsString(), false)
                         .addField("📄 Тикет", "Номер: " + ticketName + "\n Айди: " + ticketId, false)
-                        .addField("📄 Описание тикета", DataStorage.getInstance().getTicketDes().get(ticketName), false)
+                        .addField("📄 Описание тикета", DataStorage.getInstance().getTicketDescription(Integer.parseInt(ticketName)), false)
                         .addField("🔔 Действие", "Нажмите на кнопку ниже, чтобы забрать тикет", false)
                         .setTimestamp(Instant.now());
 

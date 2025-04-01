@@ -10,9 +10,8 @@ import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ClearKickedPsyholog extends ListenerAdapter {
 
@@ -22,8 +21,6 @@ public class ClearKickedPsyholog extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("clear-baned-psyholog")) {
             Guild guild = event.getGuild();
-            Member member = event.getMember();
-
             if (guild == null) {
                 event.reply("Не удалось получить гильдию.").setEphemeral(true).queue();
                 return;
@@ -36,27 +33,19 @@ public class ClearKickedPsyholog extends ListenerAdapter {
                 return;
             }
 
-            assert member != null;
-            logger.info(member.getEffectiveName() + " Прописал команду /clear-baned-psyholog");
+            // Получаем список психологов из базы данных
+            List<String> psychologistIds = DataStorage.getInstance().getPsychologistsFromDB();
+            List<String> toRemove = new ArrayList<>();
 
-            // Получаем хранилище оценок
-            Map<String, List<Integer>> psychologistRatings = DataStorage.getInstance().getPsychologistRatings();
-
-            // Итератор для изменения Map во время обхода
-            Iterator<Map.Entry<String, List<Integer>>> iterator = psychologistRatings.entrySet().iterator();
-
-            while (iterator.hasNext()) {
-                Map.Entry<String, List<Integer>> entry = iterator.next();
-                String psychologistId = entry.getKey();
-
-                // Проверяем, есть ли у участника роль психолога
+            for (String psychologistId : psychologistIds) {
                 Member psychologist = guild.getMemberById(psychologistId);
-
                 if (psychologist == null || !psychologist.getRoles().contains(psychologistRole)) {
-                    iterator.remove(); // Удаляем психолога из хранилища
-                    DataStorage.getInstance().saveData();
+                    toRemove.add(psychologistId);
                 }
             }
+
+            // Удаляем из базы данных психологов, которые не соответствуют требованиям
+            DataStorage.getInstance().removePsychologistsFromDB(toRemove);
 
             event.reply("Очищены все психологи без роли.").setEphemeral(true).queue();
         }

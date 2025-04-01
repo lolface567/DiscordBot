@@ -16,14 +16,11 @@ public class CheakBeforChanelDelete extends ListenerAdapter {
     @Override
     public void onChannelDelete(ChannelDeleteEvent event) { // Если пкмом удалить канал
         String textChannel = event.getChannel().getId();
-        if (DataStorage.getInstance().getTicketChannelMap().containsValue(textChannel)) {
-            DataStorage.getInstance().getClosedTickets().add(textChannel);
-            String user = DataStorage.getInstance().getUserActiveTickets().get(textChannel);
+        if (DataStorage.getInstance().getTicketIdName(textChannel) != null) {
+            DataStorage.getInstance().closeTicket(textChannel);
+            String user = DataStorage.getInstance().getUser(textChannel);
             CreateTicket.userActiveTicketsMemory.remove(user);
-            DataStorage.getInstance().getTicketPsychologists().remove(textChannel);
-            DataStorage.getInstance().getTicketChannelMap().remove(textChannel);
-            DataStorage.getInstance().getUserActiveTickets().remove(textChannel);
-            DataStorage.getInstance().saveData();
+            DataStorage.getInstance().closeTicket(textChannel);
         }
         if (userActiveVoiceMapMemory.containsKey(textChannel)) {  // Если пкмом удалить войс созданый через меню
             String user = userActiveVoiceMapMemory.get(textChannel);

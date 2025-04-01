@@ -50,7 +50,7 @@ public class FeedBackSystem extends ListenerAdapter {
                 return;
             }
 
-            Member psychologist = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketId));
+            Member psychologist = guild.getMemberById(DataStorage.getInstance().getPsychologist(Integer.parseInt(ticketId)));
             if (member.getId().equals(psychologist.getId())) {
                 event.reply("Ты психолог этого тикета").setEphemeral(true).queue();
                 return;
@@ -62,8 +62,7 @@ public class FeedBackSystem extends ListenerAdapter {
                 DecimalFormat df = new DecimalFormat("#.##");
 
                 int ratingFormat = Integer.parseInt(rating);
-                DataStorage.getInstance().addPsychologistRating(psychologist.getId(), Integer.parseInt(df.format(ratingFormat)));
-                DataStorage.getInstance().saveData();
+                DataStorage.getInstance().addReview(psychologist.getId(), member.getId(), Integer.parseInt(df.format(ratingFormat)));
             }
 
             String averageRating = String.format("%.2f", DataStorage.getInstance().getAverageRating(psychologist.getId()));
@@ -87,7 +86,7 @@ public class FeedBackSystem extends ListenerAdapter {
             feedBackChannel.sendMessageEmbeds(embedBuilder.build()).queue();
             logger.info("Пользователь " + member.getEffectiveName() + " Оставил отзыв!");
 
-            String channelId = DataStorage.getInstance().getTicketChannelMap().get(ticketId);
+            String channelId = DataStorage.getInstance().getTicketId(Integer.parseInt(ticketId));
             if (channelId != null) {
                 TextChannel ticketChannel = guild.getTextChannelById(channelId);
                 if (ticketChannel != null) {

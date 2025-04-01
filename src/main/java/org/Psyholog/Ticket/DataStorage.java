@@ -1,40 +1,30 @@
 package org.Psyholog.Ticket;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.Psyholog.Main;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
+
+import java.sql.*;
+
 
 public class DataStorage {
     private static final Logger logger = LoggerFactory.getLogger(DataStorage.class);
-
-    private static final String DATA_FILE_PATH = "ticketData.json"; // JSON format for data storage
+    private static final String url = Dotenv.load().get("url");
+    private static final String user = Dotenv.load().get("user");
+    private static final String password = Dotenv.load().get("password");
 
     // Singleton instance
-    @JsonIgnore
     private static DataStorage instance;
 
-    // Data variables
-    private Map<String, String> ticketChannelMap = new HashMap<>();
-    private Map<String, Integer> psyhologCloseMap = new HashMap<>();
-    private Set<String> closedTickets = new HashSet<>();
-    private Map<String, String> ticketPsychologists = new HashMap<>();
-    private Map<String, String> userActiveTickets = new HashMap<>();
-    private Map<String, String> getTicketDes = new HashMap<>();
-    private Map<String, List<Integer>> psychologistRatings = new HashMap<>(); // Новая карта для хранения оценок
-    private int ticketCounter = 0;
-
-    // Private constructor to restrict instantiation
     private DataStorage() {
-        loadData();
+        createTables();
+        initTicketCounter();
     }
 
-    // Singleton pattern method
     public static synchronized DataStorage getInstance() {
         if (instance == null) {
             instance = new DataStorage();
@@ -42,168 +32,435 @@ public class DataStorage {
         return instance;
     }
 
-    // Method for loading data using Jackson
-    private void loadData() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        File file = new File(DATA_FILE_PATH);
-        if (file.exists()) {
-            try {
-                DataWrapper data = objectMapper.readValue(file, DataWrapper.class);
-                this.ticketChannelMap = data.getTicketChannelMap() != null ? data.getTicketChannelMap() : new HashMap<>();
-                this.closedTickets = data.getClosedTickets() != null ? data.getClosedTickets() : new HashSet<>();
-                this.ticketPsychologists = data.getTicketPsychologists() != null ? data.getTicketPsychologists() : new HashMap<>();
-                this.userActiveTickets = data.getUserActiveTickets() != null ? data.getUserActiveTickets() : new HashMap<>();
-                this.ticketCounter = data.getTicketCounter();
-                this.getTicketDes = data.getTicketDes() != null ? data.getTicketDes() : new HashMap<>();
-                this.psychologistRatings = data.getPsychologistRatings() != null ? data.getPsychologistRatings() : new HashMap<>();
-                this.psyhologCloseMap = data.getPsyhologCloseMap() != null ? data.getPsyhologCloseMap() : new HashMap<>();
-            } catch (IOException e) {
-                logger.error("Не удалось загрузить данные тикетов: " + e.getMessage());
-                e.printStackTrace();
-                // Инициализация пустыми коллекциями в случае ошибки
-                this.ticketChannelMap = new HashMap<>();
-                this.closedTickets = new HashSet<>();
-                this.ticketPsychologists = new HashMap<>();
-                this.userActiveTickets = new HashMap<>();
-                this.getTicketDes = new HashMap<>();
-                this.psychologistRatings = new HashMap<>();
-                this.ticketCounter = 0;
-                this.psyhologCloseMap = new HashMap<>();
-            }
-        }
-    }
+    private void createTables() {
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             Statement stmt = conn.createStatement()) {
 
-    // Method for saving data using Jackson
-    public void saveData() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            File file = new File(DATA_FILE_PATH);
-            file.getAbsoluteFile().getParentFile().mkdirs(); // Создаем директории, если они не существуют
-            DataWrapper data = new DataWrapper(this.ticketChannelMap, this.closedTickets,
-                    this.ticketPsychologists, this.userActiveTickets,
-                    this.getTicketDes, this.psychologistRatings, this.ticketCounter, this.psyhologCloseMap);
-            objectMapper.writeValue(file, data);
-            logger.info("Данные успешно сохранены в " + DATA_FILE_PATH);
-        } catch (IOException e) {
-            logger.error("Не удалось сохранить данные тикетов: " + e.getMessage());
+            String createTicketsTable = """
+                CREATE TABLE IF NOT EXISTS tickets (
+                    id INT PRIMARY KEY,
+                    user_id VARCHAR(50) NOT NULL,
+                    psychologist_id VARCHAR(50),
+                    text_channel_id VARCHAR(50),
+                    description TEXT,
+                    status ENUM('open', 'closed') DEFAULT 'open'
+                )""";
+
+            String createPsychologistRatingsTable = """
+                CREATE TABLE IF NOT EXISTS psychologist_ratings (
+                    id int PRIMARY KEY auto_increment,
+                    psychologist_id VARCHAR(50),
+                    customer VARCHAR(50),
+                    ratings DOUBLE
+                )""";
+
+            String createCountersTable = """
+                CREATE TABLE IF NOT EXISTS ticket_counters (
+                    id VARCHAR(50) PRIMARY KEY,
+                    counter int NOT NULL
+                )""";
+
+            stmt.executeUpdate(createTicketsTable);
+            stmt.executeUpdate(createPsychologistRatingsTable);
+            stmt.executeUpdate(createCountersTable);
+
+        } catch (SQLException e) {
+            logger.error("Ошибка при создании таблиц: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Method to add a rating for a psychologist
-    public void addPsychologistRating(String psychologistId, int rating) {
-        psychologistRatings.computeIfAbsent(psychologistId, k -> new ArrayList<>()).add(rating);
-        saveData(); // Сохраняем изменения в базе
-    }
+    public List<String> getPsychologistsFromDB() {
+        List<String> psychologistIds = new ArrayList<>();
+        String query = "SELECT psychologist_id FROM psychologist_ratings";
 
-    // Метод для вычисления среднего числа
-    public double getAverageRating(String psychologistId) {
-        List<Integer> ratings = psychologistRatings.get(psychologistId);
-        if (ratings == null || ratings.isEmpty()) {
-            return 0.0;
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                psychologistIds.add(rs.getString("psychologist_id"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return ratings.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+        return psychologistIds;
     }
 
-    public int getPsychologCloseCount(String id){
-        Map<String, Integer> map = DataStorage.getInstance().getPsyhologCloseMap();
-        return map.getOrDefault(id, 0);
+    public void removePsychologistsFromDB(List<String> psychologistIds) {
+        if (psychologistIds.isEmpty()) return;
+
+        String query = "DELETE FROM psychologist_ratings WHERE psychologist_id IN (" +
+                String.join(",", psychologistIds.stream().map(id -> "?").toArray(String[]::new)) + ")";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            for (int i = 0; i < psychologistIds.size(); i++) {
+                stmt.setString(i + 1, psychologistIds.get(i));
+            }
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public Map<String, String> getTicketChannelMap() {
-        return ticketChannelMap;
-    }
-    public Map<String, Integer> getPsyhologCloseMap() {
-        return psyhologCloseMap;
-    }
+    public List<String> getClosedTicketsList() {
+        List<String> closedTickets = new ArrayList<>();
+        String query = "SELECT text_channel_id FROM tickets WHERE status = 'closed'";
 
-    public Map<String, String> getUserActiveTickets() {
-        return userActiveTickets;
-    }
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
-    public Set<String> getClosedTickets() {
+            while (rs.next()) {
+                closedTickets.add(rs.getString("text_channel_id"));
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при получении списка закрытых тикетов: " + e.getMessage());
+            e.printStackTrace();
+        }
         return closedTickets;
     }
 
-    public Map<String, String> getTicketPsychologists() {
-        return ticketPsychologists;
+    public String getTicketByMember(String textChannelId) {
+        String query = "SELECT user_id FROM tickets WHERE text_channel_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, textChannelId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("psychologist_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public int getTicketCounter() {
-        return ticketCounter;
+    public Integer getClosedTicketCount(String psychologistId) {
+        String query = "SELECT COUNT(*) FROM tickets WHERE psychologist_id = ? AND status = 'closed'";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, psychologistId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    public void incrementTicketCounter() {
-        ticketCounter++;
+
+    public void addReview(String psychologist_id, String customer, double counter) {
+        String query = "INSERT INTO psychologist_ratings (psychologist_id, customer, ratings) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            System.out.println("Добавляем запись: psychologist_id=" + psychologist_id + ", customer=" + customer + ", counter=" + counter);
+
+            stmt.setString(1, psychologist_id);
+            stmt.setString(2, customer);
+            stmt.setDouble(3, counter);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Отзыв успешно добавлен.");
+            } else {
+                System.out.println("Ошибка: отзыв не добавлен.");
+            }
+
+        } catch (SQLException e) {
+            logger.error("Ошибка при добавлении отзыва: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public Map<String, String> getTicketDes() {
-        return getTicketDes;
+    public Double getAverageRating(String psychologistId) {
+        String query = "SELECT AVG(ratings) FROM psychologist_ratings WHERE psychologist_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, psychologistId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getObject(1) != null) {  // Проверяем, что значение не NULL
+                return rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
     }
 
-    public Map<String, List<Integer>> getPsychologistRatings() {
-        return psychologistRatings;
-    }
-}
-
-// Separate wrapper class for the data
-class DataWrapper {
-    private Map<String, String> ticketChannelMap;
-    private Set<String> closedTickets;
-    private Map<String, String> ticketPsychologists;
-    private Map<String, String> userActiveTickets;
-    private Map<String, String> getTicketDes;
-    private Map<String, Integer> psyhologCloseMap;
-    private Map<String, List<Integer>> psychologistRatings; // Новое поле для хранения оценок
-    private int ticketCounter;
-
-
-    // Default constructor for Jackson
-    public DataWrapper() {}
-
-    public DataWrapper(Map<String, String> ticketChannelMap, Set<String> closedTickets,
-                       Map<String, String> ticketPsychologists, Map<String, String> userActiveTickets,
-                       Map<String, String> getTicketDes, Map<String, List<Integer>> psychologistRatings, int ticketCounter,
-                       Map<String, Integer> psyhologCloseMap) {
-        this.ticketChannelMap = ticketChannelMap;
-        this.closedTickets = closedTickets;
-        this.ticketPsychologists = ticketPsychologists;
-        this.userActiveTickets = userActiveTickets;
-        this.getTicketDes = getTicketDes;
-        this.psychologistRatings = psychologistRatings;
-        this.ticketCounter = ticketCounter;
-        this.psyhologCloseMap = psyhologCloseMap;
+    public Integer getCountOfRatings(String psychologistId) {
+        String query = "SELECT COUNT(ratings) FROM psychologist_ratings WHERE psychologist_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, psychologistId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    public Map<String, String> getTicketChannelMap() { return ticketChannelMap; }
+    public Map<String, Double> getPsychologistCounters() {
+        Map<String, Double> counters = new HashMap<>();
+        String query = "SELECT psychologist_id, SUM(ratings) FROM psychologist_ratings GROUP BY psychologist_id";
 
-    public Set<String> getClosedTickets() {
-        return closedTickets;
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String psychologistId = rs.getString("psychologist_id");
+                Double totalRating = rs.getDouble(2);
+
+                counters.put(psychologistId, totalRating);
+                System.out.println("ID: " + psychologistId + ", Total Rating: " + totalRating);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return counters;
     }
 
-    public Map<String, String> getTicketPsychologists() {
-        return ticketPsychologists;
+    public int countOpenTickets() {
+        String query = "SELECT COUNT(*) FROM tickets WHERE status = 'open'";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    public Map<String, String> getUserActiveTickets() {
-        return userActiveTickets;
+    public String ticket_counters() {
+        String query = "SELECT counter FROM ticket_counters";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("counter");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public Map<String, String> getTicketDes() {
-        return getTicketDes;
+    public boolean isTextChannelExists(String textChannelId) {
+        String query = "SELECT 1 FROM tickets WHERE text_channel_id = ? LIMIT 1";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, textChannelId);
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
-    public void setTicketDes(Map<String, String> getTicketDes) { // Добавлен сеттер для ticketDes
-        this.getTicketDes = getTicketDes;
+    public String getPsychologist(int id) {
+        String query = "SELECT psychologist_id FROM tickets WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("psychologist_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public Map<String, List<Integer>> getPsychologistRatings() {
-        return psychologistRatings;
+    public void assignPsychologist(int ticketId, String psychologistId) {
+        String query = "UPDATE tickets SET psychologist_id = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, psychologistId);
+            stmt.setInt(2, ticketId);
+            int rowsAffected = stmt.executeUpdate(); // ВАЖНО: выполнение запроса
+
+            if (rowsAffected > 0) {
+                System.out.println("Психолог " + psychologistId + " назначен на тикет " + ticketId);
+            } else {
+                System.out.println("Тикет с ID " + ticketId + " не найден.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public int getTicketCounter() {
-        return ticketCounter;
+
+    public void closeTicket(String id) {
+        String query = "UPDATE tickets SET status = 'closed' WHERE text_channel_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public Map<String, Integer> getPsyhologCloseMap(){ return psyhologCloseMap; }
+    public String getTicketIdName(String id) {
+        String query = "SELECT id FROM tickets WHERE text_channel_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getTicketId(int id) {
+        String query = "SELECT text_channel_id FROM tickets WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("text_channel_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getUser(String ticketId) {
+        String query = "SELECT user_id FROM tickets WHERE text_channel_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, ticketId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("user_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getTicketStatus(String id) {
+        String query = "SELECT status FROM tickets WHERE text_channel_id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("status");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getTicketDescription(int id) {
+        String query = "SELECT description FROM tickets WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("description");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void addTicket(int id, String userId, String textChannelId, String description) {
+        String query = "INSERT INTO tickets (id, user_id, text_channel_id, description) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            stmt.setString(2, userId);
+            stmt.setString(3, textChannelId);
+            stmt.setString(4, description);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Ошибка при добавлении тикета: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void initTicketCounter() {
+        String query = "INSERT IGNORE INTO ticket_counters (id, counter) VALUES (1, 0)";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Ошибка при инициализации счётчика тикетов: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public int getNextTicketNumber() {
+        String updateQuery = "UPDATE ticket_counters SET counter = counter + 1 WHERE id = 1";
+        String selectQuery = "SELECT counter FROM ticket_counters WHERE id = 1";
+        int ticketNumber = -1;
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             Statement updateStmt = conn.createStatement();
+             Statement selectStmt = conn.createStatement()) {
+
+            updateStmt.executeUpdate(updateQuery);
+            ResultSet rs = selectStmt.executeQuery(selectQuery);
+            if (rs.next()) {
+                ticketNumber = rs.getInt("counter");
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при получении номера тикета: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return ticketNumber;
+    }
 }

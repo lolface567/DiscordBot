@@ -32,7 +32,7 @@ public class BanUserLeavs extends ListenerAdapter {
         Guild guild = event.getGuild();
 
         // Проверяем, есть ли активные тикеты у пользователя
-        if (DataStorage.getInstance().getUserActiveTickets().containsValue(stringMember)) {
+        if (DataStorage.getInstance().getTicketByMember(stringMember) != null) {
             TextChannel textChannel = guild.getTextChannelById(userActiveTicketsMemory.get(stringMember));
 
             if (textChannel != null) { // Проверяем, что канал не null
@@ -46,7 +46,7 @@ public class BanUserLeavs extends ListenerAdapter {
                 textChannel.sendMessageEmbeds(embedBuilder1.build()).queue();
 
                 // Удаляем активный тикет пользователя
-                DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
+                DataStorage.getInstance().closeTicket(textChannel.getId());
                 userActiveTicketsMemory.remove(stringMember);
             } else {
                 logger.error("Текстовый канал не найден.");
@@ -57,6 +57,5 @@ public class BanUserLeavs extends ListenerAdapter {
                 success -> logger.info("Юзер забанен"),
                 error -> logger.error("Не удалось забанить пользователя: " + error.getMessage())
         );
-
     }
 }

@@ -70,14 +70,14 @@ public class MenuButtons extends ListenerAdapter {
             }
 
             if (member.getRoles().contains(role)) {
-                if (DataStorage.getInstance().getClosedTickets().contains(ticketId)) {
+                if (DataStorage.getInstance().getTicketStatus(ticketId).equals("closed")) {
                     event.getHook().sendMessage("Ошибка: тикет уже закрыт.").setEphemeral(true).queue();
                     return;
                 }
 
                 TextChannel textChannel = guild.getTextChannelById(ticketId);
                 Category category = guild.getCategoryById(CLOSE_TICKET_CATEGORY);
-                String user = DataStorage.getInstance().getUserActiveTickets().get(ticketId);
+                String user = DataStorage.getInstance().getUser(ticketId);
                 Member chel = guild.getMemberById(user);
 
                 if (textChannel != null) {
@@ -89,20 +89,10 @@ public class MenuButtons extends ListenerAdapter {
                                         )).queue();
                             });
                     // Точка, где тикет помечается закрытым:
-                    DataStorage.getInstance().getClosedTickets().add(ticketId);
-                    DataStorage.getInstance().getTicketDes().remove(ticketIdname);
-
-                    Map<String, Integer> map = DataStorage.getInstance().getPsyhologCloseMap();
-                    int newData = map.getOrDefault(member.getId(), 0) + 1; // Если ключа нет, берём 0, иначе текущее значение
-                    map.put(member.getId(), newData);
+                    DataStorage.getInstance().closeTicket(ticketId);
 
                     try {
                         CreateTicket.userActiveTicketsMemory.remove(user);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        DataStorage.getInstance().saveData(); // Сохраняем данные в файл
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -140,9 +130,6 @@ public class MenuButtons extends ListenerAdapter {
                                     error -> logger.error("Ошибка при обновлении прав: " + error.getMessage())
                             );
                 }
-
-                DataStorage.getInstance().getUserActiveTickets().remove(textChannel.getId());
-                DataStorage.getInstance().saveData();
 
                 EmbedBuilder embedBuilder1 = new EmbedBuilder()
                         .setColor(Color.RED)
@@ -185,7 +172,6 @@ public class MenuButtons extends ListenerAdapter {
                 textChannel.sendMessageEmbeds(embedBuilder2.build()).addActionRow(
                         Button.success("feedback:" + ticketIdname, "Оставить отзыв")
                         .withEmoji(Emoji.fromUnicode("\uD83D\uDC8C"))).queue(); // Добавляем ID тикета к кнопке обратной связи
-
             } else event.reply("У вас нету прав").setEphemeral(true).queue();
         } else if (event.getButton().getId().startsWith("change:")) {
             try {
@@ -197,7 +183,7 @@ public class MenuButtons extends ListenerAdapter {
                 }
 
                 String ticketIdname = channel[1];
-                String parseId = DataStorage.getInstance().getTicketChannelMap().get(ticketIdname);
+                String parseId = DataStorage.getInstance().getTicketId(Integer.parseInt(ticketIdname));
 
                 if (parseId == null) {
                     event.reply("Ошибка: Тикет не найден.").setEphemeral(true).queue();
@@ -244,10 +230,10 @@ public class MenuButtons extends ListenerAdapter {
             }
 
             String ticketIdname = channel[1];
-            String ticketId = DataStorage.getInstance().getTicketChannelMap().get(ticketIdname);
+            String ticketId = DataStorage.getInstance().getTicketIdName(ticketIdname);
 
-            Member psyholog = guild.getMemberById(DataStorage.getInstance().getTicketPsychologists().get(ticketIdname));
-            Member user = guild.getMemberById(DataStorage.getInstance().getUserActiveTickets().get(ticketId));
+            Member psyholog = guild.getMemberById(DataStorage.getInstance().getPsychologist(Integer.parseInt(ticketIdname)));
+            Member user = guild.getMemberById(DataStorage.getInstance().getUser(ticketId));
 
             if (proverka.getRoles().contains(role) && !userActiveVoiceMemory.contains(user.getId())) {
                 Category voice = guild.getCategoryById(VOICE_CATEGORY);
