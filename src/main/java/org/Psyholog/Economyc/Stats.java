@@ -46,7 +46,7 @@ public class Stats extends ListenerAdapter {
                     .addField("🏅 Роли:", roles, false)
                     .setFooter("ID: " + member.getId(), member.getEffectiveAvatarUrl());
 
-            event.replyEmbeds(embedBuilder.build()).queue();
+            event.replyEmbeds(embedBuilder.build()).setEphemeral(true).queue();
         }
 
         if (event.getName().equals("add_coins")) {

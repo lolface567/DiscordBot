@@ -48,11 +48,10 @@ public class Main {
                 .addEventListeners(
                         new CreateTicketSystemCommand(), new CreateAndSendTicket(), new CreateTicket(),
                         new MenuCommandEx(), new MenuButtons(), new ReTakeTicketOnModal(), new ReTakeButtonInteract(),
-                        new FeedBackSystem(), new ClearCloseCommand(), new CheckPsyhologCommand(),
+                        new FeedBackSystem(), new ClearCloseCommand(), new CheckPsyhologCommand(), new Shop(),
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
                         new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
-                        new ClearKickedPsyholog(), new CahingRolle(), new LogsSender(), new Stats(), new EarnCoins(),
-                        new Shop()
+                        new ClearKickedPsyholog(), new CahingRolle(), new LogsSender(), new Stats(), new EarnCoins()
                 )
                 .build();
         logger.info("Bot Started!");
