@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Message;
-import org.Psyholog.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

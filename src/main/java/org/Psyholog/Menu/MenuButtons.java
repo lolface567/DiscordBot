@@ -141,7 +141,7 @@ public class MenuButtons extends ListenerAdapter {
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder1.build()).queue();
 
-                TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("logsChannel"));
+                TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("logsForTickets"));
                 if (logsTextChannel == null) {
                     System.out.println("Ошибка: Канал не найден!");
                     return;

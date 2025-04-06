@@ -51,11 +51,12 @@ public class Main {
                         new FeedBackSystem(), new ClearCloseCommand(), new CheckPsyhologCommand(), new Shop(),
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
                         new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
-                        new ClearKickedPsyholog(), new CahingRolle(), new LogsSender(), new Stats(), new EarnCoins()
+                        new ClearKickedPsyholog(), new CahingRolle(), new TicketLogs(), new Stats(), new EarnCoins(),
+                        new UserLogs()
                 )
                 .build();
         logger.info("Bot Started!");
-        logger.info("Version 1.8.1");
+        logger.info("Version 1.8.2");
 
         DatabaseManager.initializeDatabase();
         DataStorage.getInstance();
