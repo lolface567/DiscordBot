@@ -62,7 +62,7 @@ public class VoiceInteract extends ListenerAdapter {
                                 if (textChannel != null) {
                                     EmbedBuilder embedBuilder = new EmbedBuilder()
                                             .setTitle("🎧 Ваш личный голосовой канал!")
-                                            .setColor(new Color(72, 133, 237)) // Красивый синий оттенок
+                                            .setColor(Color.CYAN)
                                             .setDescription("Используйте кнопки ниже для управления вашим каналом. Вы можете изменить его название, установить лимит пользователей или кикнуть участника.")
                                             .setFooter("👑 Создатель: " + member.getEffectiveName(), null)
                                             .setTimestamp(Instant.now());

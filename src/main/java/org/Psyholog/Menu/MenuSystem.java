@@ -23,7 +23,7 @@ public class MenuSystem extends ListenerAdapter {
                     .setTitle("🧠 Меню психолога")
                     .setDescription("📋 Используйте кнопки ниже для управления тикетом.")
                     .addField("🆔 Ticket ID", ticketName, false)
-                    .setColor(Color.DARK_GRAY)
+                    .setColor(Color.CYAN)
                     .setTimestamp(Instant.now());
 
             TextChannel textChannel = event.getChannel().asTextChannel();

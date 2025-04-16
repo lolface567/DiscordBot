@@ -9,6 +9,7 @@ import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.Map;
 
 public class TopPsyhologCommand extends ListenerAdapter {
@@ -23,7 +24,7 @@ public class TopPsyhologCommand extends ListenerAdapter {
             // Создаем эмбед-сообщение
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setTitle("🔹 Топ психологов");
-            embedBuilder.setColor(0x00ADEF);
+            embedBuilder.setColor(Color.CYAN);
 
             psychologistCounters.entrySet().stream()
                     .limit(10)

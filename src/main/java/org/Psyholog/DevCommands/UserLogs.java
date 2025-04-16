@@ -65,7 +65,7 @@ public class UserLogs extends ListenerAdapter {
         messageCache.put(event.getMessageIdLong(), event.getMessage());
 
         // Ограничение кеша
-        if (messageCache.size() > 200) {
+        if (messageCache.size() > 2000) {
             Long firstKey = messageCache.keySet().iterator().next();
             messageCache.remove(firstKey);
         }
@@ -84,11 +84,21 @@ public class UserLogs extends ListenerAdapter {
 
         if (deletedMessage != null) {
             embed.setAuthor(deletedMessage.getAuthor().getAsTag(), null, deletedMessage.getAuthor().getEffectiveAvatarUrl());
-            embed.setDescription("**Сообщение отправил** " + deletedMessage.getAuthor().getAsMention() +
-                    " **Удален в** <#" + event.getChannel().getId() + ">\n" +
-                    deletedMessage.getContentDisplay());
-        } else {
-            embed.setDescription("Удаленное сообщение не найдено в кеше.");
+
+            StringBuilder description = new StringBuilder();
+            description.append("**Сообщение отправил** ").append(deletedMessage.getAuthor().getAsMention())
+                    .append(" **Удалено в** <#").append(event.getChannel().getId()).append(">\n")
+                    .append(deletedMessage.getContentDisplay());
+
+            // Добавим инфу о вложениях
+            if (!deletedMessage.getAttachments().isEmpty()) {
+                description.append("\n\n📎 **Вложения:**\n");
+                for (Message.Attachment attachment : deletedMessage.getAttachments()) {
+                    description.append(attachment.getUrl()).append("\n");
+                }
+            }
+
+            embed.setDescription(description.toString());
         }
 
         if (logChannel != null) {

@@ -31,6 +31,18 @@ public class DatabaseManager {
         }
     }
 
+    // удаление роли с магазина
+    public static void removeRoleFromShop(long roleId) {
+        String query = "DELETE FROM shop_roles WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setLong(1, roleId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Добавление роли в магазин
     public static void addRoleToShop(long roleId, int cost) {
         String query = "INSERT INTO shop_roles (id, cost) VALUES (?, ?) ON DUPLICATE KEY UPDATE cost = VALUES(cost)";

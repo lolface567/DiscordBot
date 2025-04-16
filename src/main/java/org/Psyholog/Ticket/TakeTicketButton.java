@@ -126,7 +126,7 @@ public class TakeTicketButton extends ListenerAdapter {
                         }
 
                         EmbedBuilder embedBuilder = new EmbedBuilder()
-                                .setColor(Color.DARK_GRAY)
+                                .setColor(Color.CYAN)
                                 .setTitle("🎉 Психолог найден!")
                                 .setDescription("Ваш психолог: " + member.getAsMention())
                                 .addField("✨ Поддержка доступна", "Вы можете начать обсуждение.", false)

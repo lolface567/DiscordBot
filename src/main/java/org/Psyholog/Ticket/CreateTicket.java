@@ -77,10 +77,9 @@ public class CreateTicket extends ListenerAdapter {
 
                     Role role = guild.getRoleById(PSYCHOLOGY_ROLE);
 
-                    EmbedBuilder embedBuilder = new EmbedBuilder();
-                    embedBuilder
+                    EmbedBuilder embedBuilder = new EmbedBuilder()
                             .setTitle("🆕 Новое обращение")
-                            .setColor(Color.DARK_GRAY)
+                            .setColor(Color.CYAN)
                             .setDescription("Поступило новое обращение. Подробности ниже:")
                             .addField("📂 Тип:", type, false)
                             .addField("🎂 Возраст:", age, false)
@@ -91,7 +90,7 @@ public class CreateTicket extends ListenerAdapter {
                             .setTimestamp(Instant.now());
 
                     EmbedBuilder embedBuilder1 = new EmbedBuilder()
-                            .setColor(Color.DARK_GRAY)
+                            .setColor(Color.CYAN)
                             .setTitle("⏳ Ожидайте")
                             .setDescription("Мы находимся в поиске психолога для вас...")
                             .setFooter("Спасибо за ваше терпение")

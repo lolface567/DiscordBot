@@ -11,14 +11,17 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class Shop extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("shop")) {
@@ -50,8 +53,7 @@ public class Shop extends ListenerAdapter {
             }
 
             // Кнопка покупки
-            net.dv8tion.jda.api.interactions.components.buttons.Button buyButton =
-                    net.dv8tion.jda.api.interactions.components.buttons.Button.success("shop:buy", "Купить");
+            Button buyButton = Button.success("shop:buy", "Купить");
 
             event.replyEmbeds(embedBuilder.build())
                     .addActionRow(menu.build()) // Добавляем выпадающий список
@@ -80,7 +82,46 @@ public class Shop extends ListenerAdapter {
             DatabaseManager.addRoleToShop(role_id, role_cost);
             event.reply("Роль: добавлена").setEphemeral(true).queue();
         }
+
+        if (event.getName().equals("remove_role_from_shop")) {
+            long role_id;
+            if (event.getOption("role_id") != null) {
+                role_id = Objects.requireNonNull(event.getOption("role_id")).getAsLong();
+            } else {
+                event.reply("Нужно передать id роли").setEphemeral(true).queue();
+                logger.info("Пользователь не передал параметры для команды");
+                return;
+            }
+
+            DatabaseManager.removeRoleFromShop(role_id);
+            event.reply("Роль удалена из магазина").setEphemeral(true).queue();
+        }
+
+        if (event.getName().equals("check_coins")) {
+            long id_user;
+            if (event.getOption("id_user") != null) {
+                id_user = Objects.requireNonNull(event.getOption("id_user")).getAsLong();
+            } else {
+                event.reply("Нужно передать id роли").setEphemeral(true).queue();
+                logger.info("Пользователь не передал параметры для команды");
+                return;
+            }
+            Guild guild = event.getGuild();
+            assert guild != null;
+            Member member = guild.getMemberById(id_user);
+
+            assert member != null;
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setAuthor(member.getEffectiveName(), null)
+                    .setColor(Color.CYAN) // Цвет рамки
+                    .addField("Монеты:", String.valueOf(DatabaseManager.getBalance(String.valueOf(id_user))), false)
+                    .setThumbnail(member.getEffectiveAvatarUrl())
+                    .setTimestamp(Instant.now());
+
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+        }
     }
+
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         if (event.getComponentId().equals("shop:select")) {
@@ -123,7 +164,7 @@ public class Shop extends ListenerAdapter {
                 return;
             }
 
-            if(member.getRoles().contains(role)){
+            if (member.getRoles().contains(role)) {
                 event.reply("У вас уже есть роль: " + role.getName()).setEphemeral(true).queue();
                 return;
             }
@@ -137,6 +178,7 @@ public class Shop extends ListenerAdapter {
                     .queue();
         }
     }
+
     public static class ShopPurchaseManager {
         private static final Map<Long, String> userSelectedRoles = new HashMap<>();
 

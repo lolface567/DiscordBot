@@ -91,7 +91,7 @@ public class TicketSystemMessage extends ListenerAdapter {
 
         return new EmbedBuilder()
                 .setTitle("Связаться с психологом")
-                .setColor(Color.DARK_GRAY)
+                .setColor(Color.CYAN)
                 .setDescription("**Нажав на кнопку** \uD83D\uDCDD **__Связаться__**, Вы создадите отдельное анонимное обращение и Вам ответит первый освободившийся психолог.\n" +
                         "\n" +
                         "\uD83D\uDCE2 **ВНИМАНИЕ:** Если Вы не предупредили психолога о своем отсутствии в обращении, Ваш диалог может быть удален через 30 минут.\n" +

@@ -68,4 +68,6 @@ public class EarnCoins extends ListenerAdapter {
             voiceJoinTimes.put(userId, currentTime); // Фиксируем время входа
         }
     }
+
+
 }

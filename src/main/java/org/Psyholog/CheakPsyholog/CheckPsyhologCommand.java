@@ -11,6 +11,7 @@ import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class CheckPsyhologCommand extends ListenerAdapter {
                                     "🗳 Количество оценок: **%d**\n" +
                                     "🔒 Количество закрытых тикетов: **%d**",
                             member.getEffectiveName(), averageRating, ratingCount, closedTickets))
-                    .setColor(0x00ADEF)
+                    .setColor(Color.CYAN)
                     .setThumbnail(member.getEffectiveAvatarUrl());
 
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();

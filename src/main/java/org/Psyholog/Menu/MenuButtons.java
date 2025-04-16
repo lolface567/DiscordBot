@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import org.Psyholog.Main;
 import org.Psyholog.Ticket.CreateTicket;
 import org.Psyholog.Ticket.DataStorage;
 import org.slf4j.Logger;
@@ -27,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.io.File;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.Psyholog.Ticket.CreateTicket.*;
@@ -40,12 +37,12 @@ public class MenuButtons extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
-        if (event.getButton().getId().startsWith("close-ticket:")) {
+        if (Objects.requireNonNull(event.getButton().getId()).startsWith("close-ticket:")) {
             String[] parts = event.getButton().getId().split(":");
             String ticketId = parts[1];
             String ticketName = parts[2];
-            String[] cahnel = ticketName.split("-");
-            String ticketIdname = cahnel[1];
+            String[] channel = ticketName.split("-");
+            String ticketIdName = channel[1];
 
             if (ticketId == null) {
                 event.reply("Ошибка: тикет не найден.").setEphemeral(true).queue();
@@ -69,6 +66,7 @@ public class MenuButtons extends ListenerAdapter {
                 return;
             }
 
+            assert member != null;
             if (member.getRoles().contains(role)) {
                 if (DataStorage.getInstance().getTicketStatus(ticketId).equals("closed")) {
                     event.getHook().sendMessage("Ошибка: тикет уже закрыт.").setEphemeral(true).queue();
@@ -102,6 +100,7 @@ public class MenuButtons extends ListenerAdapter {
                 }
 
                 if (chel != null) {
+                    assert textChannel != null;
                     textChannel.upsertPermissionOverride(chel)
                             .setAllowed(Permission.VIEW_CHANNEL)
                             .setDenied(Permission.MESSAGE_SEND);
@@ -109,6 +108,7 @@ public class MenuButtons extends ListenerAdapter {
                     logger.info("Чеееееел не найден");
                 }
 
+                assert textChannel != null;
                 PermissionOverride rolePermissionOverride = textChannel.getPermissionOverride(role);
 
                 if (rolePermissionOverride != null) {
@@ -147,7 +147,7 @@ public class MenuButtons extends ListenerAdapter {
                     return;
                 }
 
-                File logFile = new File("logs", ticketIdname + ".txt");
+                File logFile = new File("logs", ticketIdName + ".txt");
                 if (!logFile.exists()) {
                     System.out.println("Ошибка: Файл лога не найден!");
                     return;
@@ -164,13 +164,13 @@ public class MenuButtons extends ListenerAdapter {
                 });
 
                 EmbedBuilder embedBuilder2 = new EmbedBuilder()
-                        .setColor(Color.GREEN)
+                        .setColor(Color.CYAN)
                         .setTitle("📝 Оставьте отзыв")
                         .setDescription("Чтобы поделиться своим мнением, нажмите на кнопку ниже.")
                         .setFooter("Спасибо за ваш отзыв!")
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder2.build()).addActionRow(
-                        Button.success("feedback:" + ticketIdname, "Оставить отзыв")
+                        Button.success("feedback:" + ticketIdName, "Оставить отзыв")
                         .withEmoji(Emoji.fromUnicode("\uD83D\uDC8C"))).queue(); // Добавляем ID тикета к кнопке обратной связи
             } else event.reply("У вас нету прав").setEphemeral(true).queue();
         } else if (event.getButton().getId().startsWith("change:")) {

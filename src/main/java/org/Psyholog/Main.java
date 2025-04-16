@@ -14,10 +14,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.Psyholog.CheakPsyholog.CheckPsyhologCommand;
 import org.Psyholog.CheakPsyholog.TopPsyhologCommand;
 import org.Psyholog.DevCommands.*;
-import org.Psyholog.Economyc.DatabaseManager;
-import org.Psyholog.Economyc.EarnCoins;
-import org.Psyholog.Economyc.Shop;
-import org.Psyholog.Economyc.Stats;
+import org.Psyholog.Economyc.*;
 import org.Psyholog.Feedback.FeedBackCommand;
 import org.Psyholog.Feedback.FeedBackSystem;
 import org.Psyholog.Menu.MenuButtons;
@@ -52,14 +49,16 @@ public class Main {
                         new VoiceInteract(), new TopPsyhologCommand(), new BanUserLeavs(), new CheakBeforChanelDelete(),
                         new FeedBackCommand(), new MenuSystem(), new TakeTicketButton(), new TicketSystemMessage(),
                         new ClearKickedPsyholog(), new CahingRolle(), new TicketLogs(), new Stats(), new EarnCoins(),
-                        new UserLogs()
+                        new UserLogs(), new Rewards(), new TransferCoin()
                 )
                 .build();
         logger.info("Bot Started!");
-        logger.info("Version 1.8.2");
+        logger.info("Version 1.8.3");
 
         DatabaseManager.initializeDatabase();
         DataStorage.getInstance();
+        Rewards r = new Rewards();
+        r.RewardScheduler(jda, Dotenv.load().get("ChannelForSpam"));
 
         logger.info("DataBase successfully connected");
 
@@ -67,6 +66,14 @@ public class Main {
         CommandListUpdateAction commands = jda.updateCommands();
         commands.addCommands(
                 Commands.slash("shop", "Открывает магазин сервера"),
+                Commands.slash("give", "Перевести монеты")
+                        .addOption(OptionType.STRING,"id_user" , "Айди юзера")
+                        .addOption(OptionType.STRING,"count" , "Количество"),
+                Commands.slash("check_coins", "Проверить количество монет")
+                        .addOption(OptionType.STRING,"id_user" , "Айди юзера"),
+                Commands.slash("remove_role_from_shop", "Убрать роль с продажи")
+                        .addOption(OptionType.STRING,"role_id" , "Айди роли")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("add_role_to_shop", "Выставить роль на продажу")
                         .addOption(OptionType.STRING,"role_id" , "Айди роли")
                         .addOption(OptionType.STRING,"role_cost" , "Цена")
