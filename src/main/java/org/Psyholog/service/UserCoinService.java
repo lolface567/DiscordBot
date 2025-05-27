@@ -17,12 +17,13 @@ public class UserCoinService {
     }
 
     public UserCoins getOrCreateUser(Long userId) {
-        return userCoinRepository.findById(userId).orElseGet(() -> {
-            UserCoins newUser = new UserCoins();
-            newUser.setUserId(userId);
-            newUser.setCoins(0);
-            return userCoinRepository.save(newUser);
-        });
+        return userCoinRepository.findById(userId)
+                .orElseGet(() -> {
+                    UserCoins user = new UserCoins();
+                    user.setUserId(userId); // <-- ВАЖНО!
+                    user.setCoins(0);
+                    return user;
+                });
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.dev_commands.DotenvConfig;
 import org.Psyholog.service.TicketsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MenuCommandEx extends ListenerAdapter {
     private static TicketsService ticketsService = null;
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
 
     @Autowired
     public MenuCommandEx(TicketsService ticketsService) {
@@ -28,7 +31,7 @@ public class MenuCommandEx extends ListenerAdapter {
         TextChannel textChannel = event.getChannel().asTextChannel();
         boolean curentText = ticketsService.channelExists(textChannel.getId());
         assert guild != null;
-        Role role = guild.getRoleById(Dotenv.load().get("TICKET_ROLE"));
+        Role role = guild.getRoleById(DOTENV.get("TICKET_ROLE"));
 
         if (event.getName().equals("menu")) {
             if(curentText){

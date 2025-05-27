@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Message;
+import org.Psyholog.dev_commands.DotenvConfig;
 import org.Psyholog.service.TicketCounterService;
 import org.Psyholog.service.TicketsService;
 import org.slf4j.Logger;
@@ -31,6 +32,8 @@ public class TicketSystemMessage extends ListenerAdapter {
     private static Timer timer; // Timer for scheduling updates
     private static TicketCounterService ticketCounterService;
     private static TicketsService ticketsService;
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
 
     @Autowired
     public TicketSystemMessage(TicketCounterService ticketCounterService, TicketsService ticketsService) {
@@ -42,7 +45,7 @@ public class TicketSystemMessage extends ListenerAdapter {
         try {
             Guild guild = event.getGuild();
             assert guild != null;
-            TextChannel channel = guild.getTextChannelById(Dotenv.load().get("EMBED_MESSAGE"));
+            TextChannel channel = guild.getTextChannelById(DOTENV.get("EMBED_MESSAGE"));
 
             if (channel != null) {
                 logger.info("Отправка сообщения в канал: " + channel.getName());
@@ -92,7 +95,7 @@ public class TicketSystemMessage extends ListenerAdapter {
     }
 
     private static EmbedBuilder createEmbedBuilder(Guild guild) {
-        Role psychologistRole = guild.getRoleById(Dotenv.load().get("TICKET_ROLE"));
+        Role psychologistRole = guild.getRoleById(DOTENV.get("TICKET_ROLE"));
         if (psychologistRole == null) {
             logger.error("Роль психолога не найдена!");
             return new EmbedBuilder().setTitle("Ошибка").setDescription("Роль психолога не найдена").setColor(Color.RED);

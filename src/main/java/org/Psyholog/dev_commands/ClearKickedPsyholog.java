@@ -19,6 +19,8 @@ import java.util.List;
 public class ClearKickedPsyholog extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(ClearKickedPsyholog.class);
     private static PsychologistRatingsService psychologistRatingsService;
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
 
     @Autowired
     public ClearKickedPsyholog(PsychologistRatingsService psychologistRatingsService) {
@@ -35,7 +37,7 @@ public class ClearKickedPsyholog extends ListenerAdapter {
             }
 
             // Получаем роль психолога
-            Role psychologistRole = guild.getRoleById(Dotenv.load().get("TICKET_ROLE"));
+            Role psychologistRole = guild.getRoleById(DOTENV.get("TICKET_ROLE"));
             if (psychologistRole == null) {
                 event.reply("Роль психолога не найдена. Проверьте настройки.").setEphemeral(true).queue();
                 return;

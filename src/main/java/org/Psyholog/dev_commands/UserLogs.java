@@ -19,11 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserLogs extends ListenerAdapter {
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
+
     @Override
     public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
         Guild guild = event.getGuild();
         User user = event.getUser();
-        TextChannel logChannel = guild.getTextChannelById(Dotenv.load().get("USER_LOGS_CHANNEL_ID"));
+        TextChannel logChannel = guild.getTextChannelById(DOTENV.get("USER_LOGS_CHANNEL_ID"));
 
         guild.retrieveAuditLogs().type(ActionType.BAN).limit(1).queue(logs -> {
             boolean wasBanned = false;
@@ -74,7 +77,7 @@ public class UserLogs extends ListenerAdapter {
     @Override
     public void onMessageDelete(MessageDeleteEvent event) {
         Message deletedMessage = messageCache.get(event.getMessageIdLong());
-        TextChannel logChannel = event.getGuild().getTextChannelById(Dotenv.load().get("USER_LOGS_CHANNEL_ID"));
+        TextChannel logChannel = event.getGuild().getTextChannelById(DOTENV.get("USER_LOGS_CHANNEL_ID"));
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("🗑️ Сообщение удалено")

@@ -1,6 +1,8 @@
 package org.Psyholog;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityManagerFactory;
+import org.Psyholog.dev_commands.DotenvConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -19,14 +21,16 @@ import java.util.Properties;
 @EnableJpaRepositories(basePackages = "org.Psyholog.repository")
 @PropertySource("classpath:application.yml")
 public class SpringConfig {
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
 
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        ds.setUrl("jdbc:mysql://localhost:3306/discord_bot?useSSL=false&serverTimezone=UTC");
-        ds.setUsername("root");
-        ds.setPassword("admin");
+        ds.setUrl(DOTENV.get("DB_URL"));
+        ds.setUsername(DOTENV.get("DB_USER"));
+        ds.setPassword(DOTENV.get("DB_PASSWORD"));
         return ds;
     }
 

@@ -32,7 +32,7 @@ public class DiscordBot {
     private static final Logger logger = LoggerFactory.getLogger(DiscordBot.class);
 
     @Autowired
-    public DiscordBot(Shop shop, Stats stats, TransferCoin transferCoin, EarnCoins earnCoins, Rewards rewards, CreateTicket createTicket, ReTakeButtonInteract reTakeButtonInteract,
+    public DiscordBot(Shop shop, UpdateNames updateNames, Stats stats, TransferCoin transferCoin, EarnCoins earnCoins, Rewards rewards, CreateTicket createTicket, ReTakeButtonInteract reTakeButtonInteract,
     ReTakeTicketOnModal reTakeTicketOnModal, TakeTicketButton takeTicketButton, TicketSystemMessage ticketSystemMessage, CheckPsyhologCommand checkPsyhologCommand,
     TopPsyhologCommand topPsyhologCommand, BanUserLeavs banUserLeavs, CheakBeforChanelDelete cheakBeforChanelDelete, ClearCloseCommand clearCloseCommand,
                       ClearKickedPsyholog clearKickedPsyholog, TicketLogs ticketLogs, FeedBackSystem feedBackSystem, MenuButtons menuButtons, MenuCommandEx menuCommandEx) {
@@ -51,7 +51,7 @@ public class DiscordBot {
                 .setMemberCachePolicy(MemberCachePolicy.ALL) // Полное кэширование участников
                 .enableCache(CacheFlag.VOICE_STATE) // Включаем кэширование голосовых каналов
                 .addEventListeners(
-                        new CreateTicketSystemCommand(), new CreateAndSendTicket(), createTicket,
+                        new CreateTicketSystemCommand(), updateNames, new CreateAndSendTicket(), createTicket,
                         menuCommandEx, menuButtons, reTakeTicketOnModal, reTakeButtonInteract,
                         feedBackSystem, clearCloseCommand, checkPsyhologCommand,
                         new VoiceInteract(), topPsyhologCommand, banUserLeavs, cheakBeforChanelDelete,
@@ -72,10 +72,10 @@ public class DiscordBot {
         commands.addCommands(
                 Commands.slash("shop", "Открывает магазин сервера"),
                 Commands.slash("give", "Перевести монеты")
-                        .addOption(OptionType.STRING, "id_user", "Айди юзера")
+                        .addOption(OptionType.USER, "user", "Упоминание пользователя")
                         .addOption(OptionType.STRING, "count", "Количество"),
                 Commands.slash("check_coins", "Проверить количество монет")
-                        .addOption(OptionType.STRING, "id_user", "Айди юзера"),
+                        .addOption(OptionType.USER, "user", "Упоминание пользователя"),
                 Commands.slash("remove_role_from_shop", "Убрать роль с продажи")
                         .addOption(OptionType.STRING, "role_id", "Айди роли")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
@@ -85,12 +85,14 @@ public class DiscordBot {
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("stats", "Открывает вашу статистику на сервере"),
                 Commands.slash("add_coins", "Прибавляет монеты юзеру")
-                        .addOption(OptionType.STRING, "id", "Айди юзера")
+                        .addOption(OptionType.USER, "user", "Упоминание пользователя")
                         .addOption(OptionType.STRING, "coins", "Количество")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("clear-baned-psyholog", "Чистит базу данных от снятых психологов")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("create-ticket-sys", "Создает тикет систему")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                Commands.slash("update_names", "Обновляет ники психологов для сайта")
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("rating", "Чекает средний бал психолога")
                         .addOption(OptionType.STRING, "name", "Психолог"),

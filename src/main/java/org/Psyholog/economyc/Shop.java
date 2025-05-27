@@ -113,26 +113,30 @@ public class Shop extends ListenerAdapter {
 
         if (event.getName().equals("check_coins")) {
             long id_user;
-            if (event.getOption("id_user") != null) {
-                id_user = Objects.requireNonNull(event.getOption("id_user")).getAsLong();
+            if (event.getOption("user") != null) {
+                id_user = Objects.requireNonNull(event.getOption("user")).getAsUser().getIdLong();
             } else {
-                event.reply("Нужно передать id роли").setEphemeral(true).queue();
+                event.reply("Нужно упомянуть пользователя").setEphemeral(true).queue();
                 logger.info("Пользователь не передал параметры для команды");
                 return;
             }
             Guild guild = event.getGuild();
             assert guild != null;
-            Member member = guild.getMemberById(id_user);
+            guild.retrieveMemberById(id_user).queue(
+                    member -> {
+                        EmbedBuilder embed = new EmbedBuilder()
+                                .setAuthor("\uD83D\uDD39" + member.getEffectiveName(), null)
+                                .setColor(Color.CYAN) // Цвет рамки
+                                .addField("💰Монеты:", String.valueOf(userCoinService.getBalance(member.getIdLong())), false)
+                                .setThumbnail(member.getEffectiveAvatarUrl())
+                                .setTimestamp(Instant.now());
 
-            assert member != null;
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setAuthor("\uD83D\uDD39" + member.getEffectiveName(), null)
-                    .setColor(Color.CYAN) // Цвет рамки
-                    .addField("💰Монеты:", String.valueOf(userCoinService.getBalance(member.getIdLong())), false)
-                    .setThumbnail(member.getEffectiveAvatarUrl())
-                    .setTimestamp(Instant.now());
-
-            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+                        event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+                    },
+                    error -> {
+                        event.reply("Пользователь не найден на сервере").setEphemeral(true).queue();
+                    }
+            );
         }
     }
 

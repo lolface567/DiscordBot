@@ -33,8 +33,8 @@ public class PsychologistRatingsService {
 
         for (Object[] row : results) {
             String psychologistId = (String) row[0];
-            Long count = (Long) row[1]; // 👈 Правильно
-            map.put(psychologistId, count.doubleValue()); // 👈 Переводим в Double
+            Long count = (Long) row[1];
+            map.put(psychologistId, count.doubleValue());
         }
 
         return map;

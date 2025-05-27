@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import org.Psyholog.dev_commands.DotenvConfig;
 import org.Psyholog.enumes.TicketStatus;
 import org.Psyholog.service.TicketsService;
 import org.Psyholog.ticket.CreateTicket;
@@ -39,6 +40,8 @@ public class MenuButtons extends ListenerAdapter {
     public static Set<String> userActiveVoiceMemory = new HashSet<>();
     public static Map<String, String> userActiveVoiceMapMemory = new HashMap<>();
     private static TicketsService ticketsService = null;
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
 
     @Autowired
     public MenuButtons(TicketsService ticketsService) {
@@ -84,7 +87,7 @@ public class MenuButtons extends ListenerAdapter {
                 }
 
                 TextChannel textChannel = guild.getTextChannelById(ticketId);
-                Category category = guild.getCategoryById(CLOSE_TICKET_CATEGORY);
+                Category category = guild.getCategoryById(DOTENV.get("CLOSE_TICKET_CATEGORY"));
                 String user = ticketsService.getUserIdByChannelId(ticketId);
                 Member chel = guild.getMemberById(user);
 
@@ -151,7 +154,7 @@ public class MenuButtons extends ListenerAdapter {
                         .setTimestamp(Instant.now());
                 textChannel.sendMessageEmbeds(embedBuilder1.build()).queue();
 
-                TextChannel logsTextChannel = guild.getTextChannelById(Dotenv.load().get("TICKET_LOGS_CHANNEL_ID"));
+                TextChannel logsTextChannel = guild.getTextChannelById(DOTENV.get("TICKET_LOGS_CHANNEL_ID"));
                 if (logsTextChannel == null) {
                     System.out.println("Ошибка: Канал не найден!");
                     return;

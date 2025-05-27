@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.Psyholog.dev_commands.DotenvConfig;
 import org.Psyholog.service.PsychologistRatingsService;
 import org.Psyholog.service.TicketsService;
 import org.slf4j.Logger;
@@ -19,6 +20,8 @@ import java.awt.*;
 @Service
 public class CheckPsyhologCommand extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CheckPsyhologCommand.class);
+    private static final DotenvConfig DOTENV_CONFIG = new DotenvConfig();
+    private static final Dotenv DOTENV = DOTENV_CONFIG.dotenv();
     private static PsychologistRatingsService psychologistRatingsService;
     private static TicketsService ticketsService;
 
@@ -48,7 +51,7 @@ public class CheckPsyhologCommand extends ListenerAdapter {
                 return;
             }
 
-            Role role = guild.getRoleById(Dotenv.load().get("TICKET_ROLE"));
+            Role role = guild.getRoleById(DOTENV.get("TICKET_ROLE"));
             if (role == null || !member.getRoles().contains(role)) {
                 event.reply("У этого пользователя нет роли психолога.").setEphemeral(true).queue();
                 return;

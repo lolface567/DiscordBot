@@ -15,6 +15,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,11 +60,11 @@ public class Stats extends ListenerAdapter {
         }
 
         if (event.getName().equals("add_coins")) {
-            long memberId;
-            if (event.getOption("id") != null) {
-                memberId = event.getOption("id").getAsLong();
+            long id_user;
+            if (event.getOption("user") != null) {
+                id_user = Objects.requireNonNull(event.getOption("user")).getAsUser().getIdLong();
             } else {
-                event.reply("Нужно передать id пользователя").setEphemeral(true).queue();
+                event.reply("Нужно упомянуть пользователя").setEphemeral(true).queue();
                 logger.info("Пользователь не передал параметры для команды");
                 return;
             }
@@ -75,7 +76,7 @@ public class Stats extends ListenerAdapter {
                 logger.info("Пользователь не передал параметры для команды");
                 return;
             }
-            userCoinService.addCoins(memberId, coinsCount);
+            userCoinService.addCoins(id_user, coinsCount);
             event.reply("Пользователю успешно добавлено: " + coinsCount + " коинов").setEphemeral(true).queue();
         }
     }

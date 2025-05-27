@@ -26,11 +26,10 @@ public class TransferCoin extends ListenerAdapter {
         if (event.getName().equals("give")) {
             User user = event.getUser();
             long id_user;
-
-            if (event.getOption("id_user") != null) {
-                id_user = Objects.requireNonNull(event.getOption("id_user")).getAsLong();
+            if (event.getOption("user") != null) {
+                id_user = Objects.requireNonNull(event.getOption("user")).getAsUser().getIdLong();
             } else {
-                event.reply("Нужно передать id роли").setEphemeral(true).queue();
+                event.reply("Нужно упомянуть пользователя").setEphemeral(true).queue();
                 logger.info("Пользователь не передал параметры для команды");
                 return;
             }

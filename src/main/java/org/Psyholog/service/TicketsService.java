@@ -47,7 +47,7 @@ public class TicketsService {
 
     // 🔒 Закрыть тикет
     @Transactional
-    public void closeTicket(int ticketId) {
+    public void closeTicket(long ticketId) {
         ticketsRepository.updateStatus(ticketId, TicketStatus.closed);
     }
 

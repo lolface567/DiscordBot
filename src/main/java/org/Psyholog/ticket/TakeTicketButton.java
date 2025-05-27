@@ -88,7 +88,12 @@ public class TakeTicketButton extends ListenerAdapter {
                             event.getMessage().delete().queue();
                         }, 10, TimeUnit.MINUTES);
 
-                        ticketsService.closeTicket(Integer.parseInt(ticketId));
+                        try {
+                            ticketsService.closeTicket(Long.parseLong(ticketId));
+                        } catch (NumberFormatException e) {
+                            logger.error("Помилка при конвертації ticketId: " + ticketId, e);
+                            return;
+                        }
 
                         textChannel.delete().queue();
                         return;

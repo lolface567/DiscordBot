@@ -321,7 +321,7 @@ public class VoiceInteract extends ListenerAdapter {
             try {
                 range = Integer.parseInt(type2);
             } catch (Exception e) {
-                logger.error("Что то не так");
+                logger.error("Ошибка в VoiceInteract 324");
                 voiceChannel.getManager().setUserLimit(2).queue(
                         success -> event.reply("❌ Некорректный ввод. Лимит установлен на " + 2).setEphemeral(true).queue(),
                         error -> event.reply("❌ Не удалось изменить лимит: " + error.getMessage()).setEphemeral(true).queue()
@@ -357,7 +357,7 @@ public class VoiceInteract extends ListenerAdapter {
                         error -> event.reply("❌ Не удалось изменить имя: " + error.getMessage()).setEphemeral(true).queue()
                 );
             } catch (Exception e) {
-                logger.error("Что то не так");
+                logger.error("Ошибка в VoiceInteract 360");
             }
         }
     }
